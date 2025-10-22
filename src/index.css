@@ -1,0 +1,127 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    --background: 210 20% 98%;
+    --foreground: 220 15% 20%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 15% 20%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 15% 20%;
+
+    --primary: 220 70% 35%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 220 70% 45%;
+
+    --secondary: 210 30% 94%;
+    --secondary-foreground: 220 15% 20%;
+
+    --muted: 210 25% 92%;
+    --muted-foreground: 220 10% 50%;
+
+    --accent: 215 85% 55%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 15% 88%;
+    --input: 220 15% 88%;
+    --ring: 220 70% 35%;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 220 25% 97%;
+    --sidebar-foreground: 220 15% 25%;
+    --sidebar-border: 220 15% 90%;
+    
+    --document-bg: 0 0% 100%;
+    --document-shadow: 220 20% 85%;
+    
+    --gradient-primary: linear-gradient(135deg, hsl(220, 70%, 35%), hsl(215, 75%, 45%));
+    --gradient-accent: linear-gradient(120deg, hsl(215, 85%, 55%), hsl(210, 80%, 60%));
+  }
+
+  .dark {
+    --background: 220 25% 12%;
+    --foreground: 210 20% 95%;
+
+    --card: 220 20% 15%;
+    --card-foreground: 210 20% 95%;
+
+    --popover: 220 20% 15%;
+    --popover-foreground: 210 20% 95%;
+
+    --primary: 215 85% 55%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 215 85% 65%;
+
+    --secondary: 220 20% 20%;
+    --secondary-foreground: 210 20% 95%;
+
+    --muted: 220 15% 22%;
+    --muted-foreground: 220 10% 65%;
+
+    --accent: 215 85% 60%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 70% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 15% 25%;
+    --input: 220 15% 25%;
+    --ring: 215 85% 55%;
+
+    --sidebar-background: 220 25% 10%;
+    --sidebar-foreground: 210 20% 90%;
+    --sidebar-border: 220 15% 20%;
+    
+    --document-bg: 220 20% 18%;
+    --document-shadow: 220 50% 5%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  .page-break-after {
+    page-break-after: always;
+  }
+
+  @media print {
+    .page-break-after {
+      page-break-after: always;
+    }
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out forwards;
+}

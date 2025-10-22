@@ -1,0 +1,222 @@
+import { useState, useEffect, useRef } from 'react';
+import { Sidebar } from '@/components/Sidebar';
+import { DocumentBlock } from '@/components/DocumentBlock';
+import { DocumentPreview } from '@/components/DocumentPreview';
+import { Toolbar } from '@/components/Toolbar';
+import { DocumentBlock as DocumentBlockType, BlockType } from '@/types/document';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { saveDocument, loadDocument } from '@/utils/documentStorage';
+import { exportToPDF, exportToDOCX } from '@/utils/exportDocument';
+import { toast } from 'sonner';
+import { Save, FolderOpen, Trash2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+
+const Index = () => {
+  const [blocks, setBlocks] = useState<DocumentBlockType[]>([]);
+  const [showPreview, setShowPreview] = useState(false);
+  const previewRef = useRef<HTMLDivElement>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  useEffect(() => {
+    const handleLoadDocument = () => {
+      const savedBlocks = loadDocument();
+      if (savedBlocks && savedBlocks.length > 0) {
+        setBlocks(savedBlocks);
+        toast.success('Documento carregado com sucesso!');
+      } else {
+        toast.error('Nenhum documento salvo encontrado');
+      }
+    };
+
+    window.addEventListener('loadDocument', handleLoadDocument);
+    return () => window.removeEventListener('loadDocument', handleLoadDocument);
+  }, []);
+
+  useEffect(() => {
+    const autoSave = setInterval(() => {
+      if (blocks.length > 0) {
+        saveDocument(blocks);
+      }
+    }, 30000); // Auto-save every 30 seconds
+
+    return () => clearInterval(autoSave);
+  }, [blocks]);
+
+  const addBlock = (type: BlockType) => {
+    const newBlock: DocumentBlockType = {
+      id: `block-${Date.now()}-${Math.random()}`,
+      type,
+      content: '',
+      level: type === 'title' ? 1 : undefined,
+      listItems: type === 'list' ? [''] : undefined,
+      tableData: type === 'table' ? { headers: ['Coluna 1', 'Coluna 2'], rows: [['', ''], ['', '']] } : undefined,
+      coverData: type === 'cover' ? {
+        title: '',
+        author: '',
+        institution: '',
+        city: '',
+        year: new Date().getFullYear().toString(),
+      } : undefined,
+    };
+    setBlocks([...blocks, newBlock]);
+    toast.success('Elemento adicionado!');
+  };
+
+  const updateBlock = (id: string, updates: Partial<DocumentBlockType>) => {
+    setBlocks(blocks.map((block) => 
+      block.id === id ? { ...block, ...updates } : block
+    ));
+  };
+
+  const deleteBlock = (id: string) => {
+    setBlocks(blocks.filter((block) => block.id !== id));
+    toast.success('Elemento removido');
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      setBlocks((items) => {
+        const oldIndex = items.findIndex((item) => item.id === active.id);
+        const newIndex = items.findIndex((item) => item.id === over.id);
+        return arrayMove(items, oldIndex, newIndex);
+      });
+      toast.success('Ordem alterada');
+    }
+  };
+
+  const handleSave = () => {
+    if (saveDocument(blocks)) {
+      toast.success('Documento salvo com sucesso!');
+    } else {
+      toast.error('Erro ao salvar documento');
+    }
+  };
+
+  const handleLoad = () => {
+    const savedBlocks = loadDocument();
+    if (savedBlocks && savedBlocks.length > 0) {
+      setBlocks(savedBlocks);
+      toast.success('Documento carregado com sucesso!');
+    } else {
+      toast.error('Nenhum documento salvo encontrado');
+    }
+  };
+
+  const handleClear = () => {
+    if (confirm('Tem certeza que deseja limpar o documento?')) {
+      setBlocks([]);
+      toast.success('Documento limpo');
+    }
+  };
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const handleExport = async (format: 'pdf' | 'docx') => {
+    if (format === 'pdf') {
+      if (previewRef.current) {
+        const success = await exportToPDF(previewRef.current);
+        if (success) {
+          toast.success('PDF exportado com sucesso!');
+        } else {
+          toast.error('Erro ao exportar PDF');
+        }
+      }
+    } else if (format === 'docx') {
+      const success = await exportToDOCX(blocks);
+      if (success) {
+        toast.success('DOCX exportado com sucesso!');
+      } else {
+        toast.error('Erro ao exportar DOCX');
+      }
+    }
+  };
+
+  return (
+    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+      <div className="flex h-screen overflow-hidden bg-background">
+        <Sidebar onAddBlock={addBlock} />
+        
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <Toolbar
+            onPrint={handlePrint}
+            onExport={handleExport}
+            onTogglePreview={() => setShowPreview(!showPreview)}
+            showPreview={showPreview}
+          />
+
+          <div className="h-12 bg-card border-b border-border flex items-center justify-between px-8">
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={handleSave} className="gap-2">
+                <Save className="w-4 h-4" />
+                Salvar
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleLoad} className="gap-2">
+                <FolderOpen className="w-4 h-4" />
+                Carregar
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleClear} className="gap-2 text-destructive hover:text-destructive">
+                <Trash2 className="w-4 h-4" />
+                Limpar
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">Auto-salvamento a cada 30s</p>
+          </div>
+
+          {showPreview ? (
+            <div ref={previewRef}>
+              <DocumentPreview blocks={blocks} />
+            </div>
+          ) : (
+            <div className="flex-1 overflow-auto p-8">
+              <div className="max-w-4xl mx-auto space-y-4">
+                <div className="mb-8">
+                  <h2 className="text-2xl font-bold text-foreground mb-2">
+                    Construa seu Documento
+                  </h2>
+                  <p className="text-muted-foreground">
+                    Adicione e organize os elementos do seu trabalho acadêmico (arraste para reordenar)
+                  </p>
+                </div>
+
+                {blocks.length === 0 ? (
+                  <div className="text-center py-20 border-2 border-dashed border-border rounded-lg animate-fade-in">
+                    <p className="text-lg text-muted-foreground">
+                      Nenhum elemento adicionado ainda
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-2">
+                      Use a barra lateral para começar a construir seu documento
+                    </p>
+                  </div>
+                ) : (
+                  <SortableContext items={blocks.map(b => b.id)} strategy={verticalListSortingStrategy}>
+                    {blocks.map((block) => (
+                      <DocumentBlock
+                        key={block.id}
+                        block={block}
+                        onUpdate={updateBlock}
+                        onDelete={deleteBlock}
+                      />
+                    ))}
+                  </SortableContext>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </DndContext>
+  );
+};
+
+export default Index;
