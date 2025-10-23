@@ -30,7 +30,7 @@ export const Toolbar = ({ onPrint, onExport, onTogglePreview, showPreview }: Too
         </Button>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 m-5">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm" className="gap-2">

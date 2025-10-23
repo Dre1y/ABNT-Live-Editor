@@ -170,7 +170,7 @@ const Index = () => {
             showPreview={showPreview}
           />
 
-          <div className="h-14 bg-card border-b border-border flex items-center justify-between px-6">
+          <div className="h-14 bg-card border-b border-border flex items-center justify-between px-6 p-5">
             <div className="flex gap-3">
               <Button variant="outline" size="sm" onClick={handleSave} className="gap-2">
                 <Save className="w-4 h-4" />

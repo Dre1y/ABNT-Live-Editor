@@ -51,7 +51,7 @@ export const Sidebar = ({ onAddBlock }: SidebarProps) => {
         Voltar ao Início
       </Button>
 
-      <div className="space-y-2 flex-1">
+      <div className="space-y-2 flex-1 overflow-y-auto">
         <h2 className="text-sm font-semibold text-foreground mb-3 uppercase tracking-wide">
           Adicionar Elementos
         </h2>
