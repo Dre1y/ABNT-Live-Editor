@@ -153,6 +153,67 @@ export const DocumentPreview = ({ blocks }: DocumentPreviewProps) => {
                     </ul>
                   )}
 
+                  {block.type === 'ordered-list' && (
+                    <ol
+                      className="list-decimal pl-8 space-y-2"
+                      style={{ lineHeight: 1.5, fontSize: '12pt' }}
+                    >
+                      {(block.listItems || []).map((item, index) => (
+                        <li key={index}>{item || `Item ${index + 1}`}</li>
+                      ))}
+                    </ol>
+                  )}
+
+                  {block.type === 'abstract' && (
+                    <div className="my-8 page-break-after">
+                      <h2 className="text-xl font-bold text-center uppercase mb-4">RESUMO</h2>
+                      <p
+                        className="text-base text-justify"
+                        style={{
+                          lineHeight: 1.5,
+                          fontSize: '12pt',
+                        }}
+                      >
+                        {block.content || 'Resumo vazio'}
+                      </p>
+                    </div>
+                  )}
+
+                  {block.type === 'keywords' && (
+                    <div className="my-6">
+                      <p className="font-bold mb-2" style={{ fontSize: '12pt' }}>
+                        Palavras-chave:
+                      </p>
+                      <p className="text-base" style={{ lineHeight: 1.5, fontSize: '12pt' }}>
+                        {(block.keywords || []).join('; ')}.
+                      </p>
+                    </div>
+                  )}
+
+                  {block.type === 'references' && (
+                    <div className="my-8 page-break-before">
+                      <h2 className="text-xl font-bold text-center uppercase mb-6">REFERÊNCIAS</h2>
+                      <div className="space-y-4">
+                        {(block.references || []).map((reference, index) => (
+                          <p
+                            key={index}
+                            className="text-base text-justify"
+                            style={{
+                              lineHeight: 1.5,
+                              fontSize: '12pt',
+                            }}
+                          >
+                            {reference || `Referência ${index + 1}`}
+                          </p>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {block.type === 'page-break' && (
+                    <div className="page-break-after h-0"></div>
+                  )}
+
                   {block.type === 'table' && block.tableData && (
                     <div className="my-6 overflow-x-auto">
                       <table className="w-full border-collapse border border-foreground/20 text-sm">

@@ -11,10 +11,21 @@ import { exportToPDF, exportToDOCX } from '@/utils/exportDocument';
 import { toast } from 'sonner';
 import { Save, FolderOpen, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 const Index = () => {
   const [blocks, setBlocks] = useState<DocumentBlockType[]>([]);
   const [showPreview, setShowPreview] = useState(false);
+  const [showClearDialog, setShowClearDialog] = useState(false);
   const previewRef = useRef<HTMLDivElement>(null);
 
   const sensors = useSensors(
@@ -42,9 +53,12 @@ const Index = () => {
   useEffect(() => {
     const autoSave = setInterval(() => {
       if (blocks.length > 0) {
-        saveDocument(blocks);
+        const saved = saveDocument(blocks);
+        if (saved) {
+          toast.info('Documento salvo automaticamente');
+        }
       }
-    }, 30000); // Auto-save every 30 seconds
+    }, 300000); // Auto-save every 5 minutes (300000ms)
 
     return () => clearInterval(autoSave);
   }, [blocks]);
@@ -55,7 +69,9 @@ const Index = () => {
       type,
       content: '',
       level: type === 'title' ? 1 : undefined,
-      listItems: type === 'list' ? [''] : undefined,
+      listItems: (type === 'list' || type === 'ordered-list') ? [''] : undefined,
+      keywords: type === 'keywords' ? [''] : undefined,
+      references: type === 'references' ? [''] : undefined,
       tableData: type === 'table' ? { headers: ['Coluna 1', 'Coluna 2'], rows: [['', ''], ['', '']] } : undefined,
       coverData: type === 'cover' ? {
         title: '',
@@ -112,10 +128,9 @@ const Index = () => {
   };
 
   const handleClear = () => {
-    if (confirm('Tem certeza que deseja limpar o documento?')) {
-      setBlocks([]);
-      toast.success('Documento limpo');
-    }
+    setBlocks([]);
+    setShowClearDialog(false);
+    toast.success('Documento limpo');
   };
 
   const handlePrint = () => {
@@ -155,8 +170,8 @@ const Index = () => {
             showPreview={showPreview}
           />
 
-          <div className="h-12 bg-card border-b border-border flex items-center justify-between px-8">
-            <div className="flex gap-2">
+          <div className="h-14 bg-card border-b border-border flex items-center justify-between px-6">
+            <div className="flex gap-3">
               <Button variant="outline" size="sm" onClick={handleSave} className="gap-2">
                 <Save className="w-4 h-4" />
                 Salvar
@@ -165,12 +180,12 @@ const Index = () => {
                 <FolderOpen className="w-4 h-4" />
                 Carregar
               </Button>
-              <Button variant="outline" size="sm" onClick={handleClear} className="gap-2 text-destructive hover:text-destructive">
+              <Button variant="outline" size="sm" onClick={() => setShowClearDialog(true)} className="gap-2 text-destructive hover:text-destructive">
                 <Trash2 className="w-4 h-4" />
                 Limpar
               </Button>
             </div>
-            <p className="text-xs text-muted-foreground">Auto-salvamento a cada 30s</p>
+            <p className="text-xs text-muted-foreground">Auto-salvamento a cada 5 minutos</p>
           </div>
 
           {showPreview ? (
@@ -214,6 +229,23 @@ const Index = () => {
             </div>
           )}
         </div>
+
+        <AlertDialog open={showClearDialog} onOpenChange={setShowClearDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Limpar Documento</AlertDialogTitle>
+              <AlertDialogDescription>
+                Tem certeza que deseja limpar o documento? Esta ação não pode ser desfeita e todos os elementos serão removidos.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction onClick={handleClear} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                Limpar
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </DndContext>
   );

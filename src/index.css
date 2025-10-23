@@ -104,9 +104,23 @@ All colors MUST be HSL.
     page-break-after: always;
   }
 
+  .page-break-before {
+    page-break-before: always;
+  }
+
   @media print {
     .page-break-after {
       page-break-after: always;
+      break-after: page;
+    }
+    
+    .page-break-before {
+      page-break-before: always;
+      break-before: page;
+    }
+
+    .no-print {
+      display: none !important;
     }
   }
 }

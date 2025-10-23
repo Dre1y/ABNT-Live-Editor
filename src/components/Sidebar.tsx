@@ -1,7 +1,8 @@
-import { FileText, Type, Quote, Image, List, Table, FileSignature, Book, BookOpen } from 'lucide-react';
+import { FileText, Type, Quote, Image, List, ListOrdered, Table, FileSignature, Book, BookOpen, FileX, FileKey, Library, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { BlockType } from '@/types/document';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { useNavigate } from 'react-router-dom';
 
 interface SidebarProps {
   onAddBlock: (type: BlockType) => void;
@@ -10,19 +11,26 @@ interface SidebarProps {
 const blockTypes = [
   { type: 'cover' as BlockType, icon: Book, label: 'Capa' },
   { type: 'toc' as BlockType, icon: BookOpen, label: 'Sumário' },
+  { type: 'abstract' as BlockType, icon: FileText, label: 'Resumo' },
+  { type: 'keywords' as BlockType, icon: FileKey, label: 'Palavras-chave' },
   { type: 'title' as BlockType, icon: Type, label: 'Título' },
   { type: 'paragraph' as BlockType, icon: FileText, label: 'Parágrafo' },
   { type: 'quote' as BlockType, icon: Quote, label: 'Citação' },
   { type: 'image' as BlockType, icon: Image, label: 'Imagem' },
-  { type: 'list' as BlockType, icon: List, label: 'Lista' },
+  { type: 'list' as BlockType, icon: List, label: 'Lista Não Ordenada' },
+  { type: 'ordered-list' as BlockType, icon: ListOrdered, label: 'Lista Ordenada' },
   { type: 'table' as BlockType, icon: Table, label: 'Tabela' },
+  { type: 'references' as BlockType, icon: Library, label: 'Referências' },
   { type: 'footnote' as BlockType, icon: FileSignature, label: 'Nota de Rodapé' },
+  { type: 'page-break' as BlockType, icon: FileX, label: 'Quebra de Página' },
 ];
 
 export const Sidebar = ({ onAddBlock }: SidebarProps) => {
+  const navigate = useNavigate();
+
   return (
     <div className="w-72 bg-sidebar border-r border-sidebar-border h-screen flex flex-col p-6">
-      <div className="mb-8">
+      <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
           <h1 className="text-2xl font-bold text-foreground">
             ABNT Doc Editor
@@ -33,6 +41,15 @@ export const Sidebar = ({ onAddBlock }: SidebarProps) => {
           Editor de documentos acadêmicos
         </p>
       </div>
+
+      <Button
+        variant="outline"
+        className="w-full justify-start gap-2 mb-4"
+        onClick={() => navigate('/')}
+      >
+        <Home className="w-4 h-4" />
+        Voltar ao Início
+      </Button>
 
       <div className="space-y-2 flex-1">
         <h2 className="text-sm font-semibold text-foreground mb-3 uppercase tracking-wide">

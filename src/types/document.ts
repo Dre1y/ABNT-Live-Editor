@@ -1,4 +1,4 @@
-export type BlockType = 'title' | 'paragraph' | 'quote' | 'image' | 'list' | 'table' | 'footnote' | 'cover' | 'toc';
+export type BlockType = 'title' | 'paragraph' | 'quote' | 'image' | 'list' | 'ordered-list' | 'table' | 'footnote' | 'cover' | 'toc' | 'page-break' | 'abstract' | 'references' | 'keywords';
 
 export interface TableCell {
   content: string;
@@ -12,6 +12,8 @@ export interface DocumentBlock {
   imageUrl?: string;
   alt?: string;
   listItems?: string[];
+  keywords?: string[];
+  references?: string[];
   tableData?: {
     headers: string[];
     rows: string[][];

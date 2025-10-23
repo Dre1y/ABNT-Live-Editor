@@ -53,9 +53,31 @@ export const DocumentBlock = ({ block, onUpdate, onDelete }: DocumentBlockProps)
     onUpdate(block.id, { listItems: newItems });
   };
 
+  const handleKeywordChange = (index: number, value: string) => {
+    const newItems = [...(block.keywords || [])];
+    newItems[index] = value;
+    onUpdate(block.id, { keywords: newItems });
+  };
+
+  const handleReferenceChange = (index: number, value: string) => {
+    const newItems = [...(block.references || [])];
+    newItems[index] = value;
+    onUpdate(block.id, { references: newItems });
+  };
+
   const addListItem = () => {
     const newItems = [...(block.listItems || []), ''];
     onUpdate(block.id, { listItems: newItems });
+  };
+
+  const addKeyword = () => {
+    const newItems = [...(block.keywords || []), ''];
+    onUpdate(block.id, { keywords: newItems });
+  };
+
+  const addReference = () => {
+    const newItems = [...(block.references || []), ''];
+    onUpdate(block.id, { references: newItems });
   };
 
   return (
@@ -176,6 +198,96 @@ export const DocumentBlock = ({ block, onUpdate, onDelete }: DocumentBlockProps)
             >
               + Adicionar item
             </Button>
+          </div>
+        )}
+
+        {block.type === 'ordered-list' && (
+          <div className="space-y-2">
+            {(block.listItems || ['']).map((item, index) => (
+              <div key={index} className="flex gap-2 items-center">
+                <span className="text-sm font-semibold text-muted-foreground w-6">{index + 1}.</span>
+                <Input
+                  value={item}
+                  onChange={(e) => handleListItemChange(index, e.target.value)}
+                  placeholder={`Item ${index + 1}...`}
+                  className="font-document flex-1"
+                />
+              </div>
+            ))}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={addListItem}
+              className="w-full"
+            >
+              + Adicionar item
+            </Button>
+          </div>
+        )}
+
+        {block.type === 'abstract' && (
+          <Textarea
+            value={block.content}
+            onChange={(e) => onUpdate(block.id, { content: e.target.value })}
+            placeholder="Digite o resumo do trabalho..."
+            className="min-h-40 font-document resize-none"
+          />
+        )}
+
+        {block.type === 'keywords' && (
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground mb-2">Palavras-chave (uma por linha)</p>
+            {(block.keywords || ['']).map((keyword, index) => (
+              <Input
+                key={index}
+                value={keyword}
+                onChange={(e) => handleKeywordChange(index, e.target.value)}
+                placeholder={`Palavra-chave ${index + 1}...`}
+                className="font-document"
+              />
+            ))}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={addKeyword}
+              className="w-full"
+            >
+              + Adicionar palavra-chave
+            </Button>
+          </div>
+        )}
+
+        {block.type === 'references' && (
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground mb-2">Referências bibliográficas (formato ABNT)</p>
+            {(block.references || ['']).map((reference, index) => (
+              <Textarea
+                key={index}
+                value={reference}
+                onChange={(e) => handleReferenceChange(index, e.target.value)}
+                placeholder={`Referência ${index + 1}...`}
+                className="min-h-20 font-document resize-none text-sm"
+              />
+            ))}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={addReference}
+              className="w-full"
+            >
+              + Adicionar referência
+            </Button>
+          </div>
+        )}
+
+        {block.type === 'page-break' && (
+          <div className="p-6 bg-muted/30 rounded border-2 border-dashed border-border text-center">
+            <p className="text-sm font-semibold text-muted-foreground">
+              📄 Quebra de Página
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Uma nova página será iniciada após este elemento
+            </p>
           </div>
         )}
 
