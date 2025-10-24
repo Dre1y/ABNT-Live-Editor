@@ -22,7 +22,6 @@ export const DocumentPreview = ({ blocks }: DocumentPreviewProps) => {
       }));
   }, [blocks]);
 
-  // Divide os blocos em páginas
   useEffect(() => {
     if (!containerRef.current) return;
 
@@ -32,27 +31,18 @@ export const DocumentPreview = ({ blocks }: DocumentPreviewProps) => {
 
     const estimateBlockHeight = (block: DocumentBlock) => {
       switch (block.type) {
-        case "paragraph":
-          return ((block.content?.length || 50) / 2) + 20;
-        case "title":
-          return 40;
-        case "image":
-          return 200;
+        case "paragraph": return ((block.content?.length || 50) / 2) + 20;
+        case "title": return 40;
+        case "image": return 200;
         case "list":
-        case "ordered-list":
-          return ((block.listItems?.length || 3) * 20) + 10;
+        case "ordered-list": return ((block.listItems?.length || 3) * 20) + 10;
         case "abstract":
         case "references":
-        case "keywords":
-          return 80;
-        case "table":
-          return ((block.tableData?.rows.length || 3) * 30) + 40;
-        case "quote":
-          return 60;
-        case "cover":
-          return 500;
-        default:
-          return 50;
+        case "keywords": return 80;
+        case "table": return ((block.tableData?.rows.length || 3) * 30) + 40;
+        case "quote": return 60;
+        case "cover": return 500;
+        default: return 50;
       }
     };
 
@@ -87,7 +77,6 @@ export const DocumentPreview = ({ blocks }: DocumentPreviewProps) => {
     return sizes[level as keyof typeof sizes] || sizes[1];
   };
 
-  // Renderiza cada bloco
   const renderBlock = (block: DocumentBlock) => {
     switch (block.type) {
       case "title":
@@ -192,13 +181,22 @@ export const DocumentPreview = ({ blocks }: DocumentPreviewProps) => {
   return (
     <div style={{ flex: 1, height: "100vh", overflowY: "auto", backgroundColor: "#f5f5f5", padding: "2rem 0" }} ref={containerRef}>
       <div style={{ maxWidth: "800px", margin: "0 auto", padding: "0 2rem" }}>
-        {pages.map((pageBlocks, index) => (
-          <div key={index} style={{ width: "21cm", minHeight: "29.7cm", padding: "3cm 2cm 2cm 3cm", background: "white", boxShadow: "0 0 10px rgba(0,0,0,0.1)", marginBottom: "1rem", boxSizing: "border-box", overflow: "hidden" }}>
-            {pageBlocks.map((block) => (
-              <div key={block.id}>{renderBlock(block)}</div>
-            ))}
+        {blocks.length === 0 ? (
+          <div style={{ width: "21cm", minHeight: "29.7cm", padding: "3cm 2cm 2cm 3cm", background: "white", boxShadow: "0 0 10px rgba(0,0,0,0.1)", marginBottom: "1rem", boxSizing: "border-box", display: "flex", justifyContent: "center", alignItems: "center", textAlign: "center" }}>
+            <div style={{ color: "#888" }}>
+              <p style={{ fontSize: "1.2rem", marginBottom: "0.5rem" }}>Seu documento aparecerá aqui</p>
+              <p style={{ fontSize: "0.9rem" }}>Comece adicionando elementos pela barra lateral</p>
+            </div>
           </div>
-        ))}
+        ) : (
+          pages.map((pageBlocks, index) => (
+            <div key={index} style={{ width: "21cm", minHeight: "29.7cm", padding: "3cm 2cm 2cm 3cm", background: "white", boxShadow: "0 0 10px rgba(0,0,0,0.1)", marginBottom: "1rem", boxSizing: "border-box", overflow: "hidden" }}>
+              {pageBlocks.map((block) => (
+                <div key={block.id}>{renderBlock(block)}</div>
+              ))}
+            </div>
+          ))
+        )}
       </div>
     </div>
   );
