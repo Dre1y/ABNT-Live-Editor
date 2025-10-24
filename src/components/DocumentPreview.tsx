@@ -82,6 +82,21 @@ export const DocumentPreview = ({ blocks }: DocumentPreviewProps) => {
       case "title":
         return <h2 className={getTitleClass(block.level)} style={{ marginBottom: "1rem", lineHeight: 1.5 }}>{block.content || "Título sem texto"}</h2>;
 
+      case "toc":
+        return (
+          <div style={{ margin: "2rem 0" }}>
+            <h2 style={{ textAlign: "center", fontWeight: "bold", textTransform: "uppercase", marginBottom: "1rem" }}>SUMÁRIO</h2>
+            <ul style={{ listStyle: "none", paddingLeft: 0, fontSize: "12pt", lineHeight: 1.5 }}>
+              {tableOfContents.map((item) => (
+                <li key={item.id} style={{ marginLeft: `${(item.level - 1) * 1.5}rem`, display: "flex", justifyContent: "space-between" }}>
+                  <span>{item.content}</span>
+                  <span>{item.page}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        );
+
       case "paragraph":
         return <p style={{ lineHeight: 1.5, textAlign: "justify", textIndent: "1.25cm", fontSize: "12pt", marginBottom: "1rem" }}>{block.content || "Parágrafo vazio"}</p>;
 
