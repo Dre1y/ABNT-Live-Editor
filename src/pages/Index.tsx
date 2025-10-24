@@ -133,10 +133,6 @@ const Index = () => {
     toast.success('Documento limpo');
   };
 
-  const handlePrint = () => {
-    window.print();
-  };
-
   const handleExport = async (format: 'pdf' | 'docx') => {
     if (format === 'pdf') {
       if (previewRef.current) {
@@ -164,7 +160,6 @@ const Index = () => {
         
         <div className="flex-1 flex flex-col overflow-hidden">
           <Toolbar
-            onPrint={handlePrint}
             onExport={handleExport}
             onTogglePreview={() => setShowPreview(!showPreview)}
             showPreview={showPreview}
