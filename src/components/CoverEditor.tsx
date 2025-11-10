@@ -1,5 +1,5 @@
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface CoverEditorProps {
   data: {
@@ -25,7 +25,7 @@ export const CoverEditor = ({ data, onChange }: CoverEditorProps) => {
         <Input
           id="title"
           value={data.title}
-          onChange={(e) => handleChange('title', e.target.value)}
+          onChange={(e) => handleChange("title", e.target.value)}
           placeholder="Digite o título..."
           className="font-semibold"
         />
@@ -35,8 +35,8 @@ export const CoverEditor = ({ data, onChange }: CoverEditorProps) => {
         <Label htmlFor="subtitle">Subtítulo (Opcional)</Label>
         <Input
           id="subtitle"
-          value={data.subtitle || ''}
-          onChange={(e) => handleChange('subtitle', e.target.value)}
+          value={data.subtitle || ""}
+          onChange={(e) => handleChange("subtitle", e.target.value)}
           placeholder="Digite o subtítulo..."
         />
       </div>
@@ -46,7 +46,7 @@ export const CoverEditor = ({ data, onChange }: CoverEditorProps) => {
         <Input
           id="author"
           value={data.author}
-          onChange={(e) => handleChange('author', e.target.value)}
+          onChange={(e) => handleChange("author", e.target.value)}
           placeholder="Seu nome completo..."
         />
       </div>
@@ -56,7 +56,7 @@ export const CoverEditor = ({ data, onChange }: CoverEditorProps) => {
         <Input
           id="institution"
           value={data.institution}
-          onChange={(e) => handleChange('institution', e.target.value)}
+          onChange={(e) => handleChange("institution", e.target.value)}
           placeholder="Nome da universidade/instituição..."
         />
       </div>
@@ -67,7 +67,7 @@ export const CoverEditor = ({ data, onChange }: CoverEditorProps) => {
           <Input
             id="city"
             value={data.city}
-            onChange={(e) => handleChange('city', e.target.value)}
+            onChange={(e) => handleChange("city", e.target.value)}
             placeholder="Cidade..."
           />
         </div>
@@ -76,8 +76,9 @@ export const CoverEditor = ({ data, onChange }: CoverEditorProps) => {
           <Label htmlFor="year">Ano</Label>
           <Input
             id="year"
+            type="number"
             value={data.year}
-            onChange={(e) => handleChange('year', e.target.value)}
+            onChange={(e) => handleChange("year", e.target.value)}
             placeholder="2025..."
           />
         </div>
