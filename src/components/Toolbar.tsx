@@ -19,7 +19,8 @@ export const Toolbar = ({
   showPreview,
 }: ToolbarProps) => {
   return (
-    <div className="h-16 border-b border-border bg-card flex items-center justify-between px-8">
+    <div className="h-16 border-b border-border bg-card flex items-center px-8">
+      {/* Lado esquerdo */}
       <div className="flex items-center gap-4">
         <Button
           variant={showPreview ? "default" : "outline"}
@@ -32,6 +33,14 @@ export const Toolbar = ({
         </Button>
       </div>
 
+      {/* CENTRO */}
+      <div className="flex-1 flex justify-center">
+        <span className="text-sm font-medium">
+          {showPreview ? "Visualizando documento" : "Editando documento"}
+        </span>
+      </div>
+
+      {/* Lado direito */}
       <div className="flex items-center gap-2 m-5">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
