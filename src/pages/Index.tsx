@@ -39,6 +39,23 @@ import {
 } from "@/components/ui/alert-dialog";
 
 const Index = () => {
+  const BLOCK_LABELS: Record<BlockType, string> = {
+    cover: "Capa",
+    title: "Título",
+    paragraph: "Parágrafo",
+    abstract: "Resumo",
+    keywords: "Palavras-chave",
+    references: "Referências",
+    list: "Lista",
+    "ordered-list": "Lista numerada",
+    image: "Imagem",
+    quote: "Citação",
+    table: "Tabela",
+    footnote: "Nota de rodapé",
+    toc: "Sumário",
+    "page-break": "Quebra de página",
+  };
+
   const [blocks, setBlocks] = useState<DocumentBlockType[]>([]);
   const [showPreview, setShowPreview] = useState(false);
   const [showClearDialog, setShowClearDialog] = useState(false);
@@ -124,7 +141,7 @@ const Index = () => {
           : undefined,
     };
     setBlocks([...blocks, newBlock]);
-    toast.success("Elemento adicionado!");
+    toast.success(`${BLOCK_LABELS[type]} adicionada(o)!`);
   };
 
   const updateBlock = (id: string, updates: Partial<DocumentBlockType>) => {
