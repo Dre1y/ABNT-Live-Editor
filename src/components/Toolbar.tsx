@@ -43,12 +43,6 @@ export const Toolbar = ({
       {/* Lado direito */}
       <div className="flex items-center gap-2 m-5">
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="gap-2" disabled>
-              <FileDown className="w-4 h-4" />
-              Exportar
-            </Button>
-          </DropdownMenuTrigger>
           <DropdownMenuContent className="bg-popover z-50">
             <DropdownMenuItem
               onClick={() => onExport("pdf")}
