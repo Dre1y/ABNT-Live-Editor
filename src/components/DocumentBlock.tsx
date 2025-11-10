@@ -1,14 +1,20 @@
-import { DocumentBlock as DocumentBlockType } from '@/types/document';
-import { Trash2, GripVertical, Upload } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { TableEditor } from '@/components/TableEditor';
-import { CoverEditor } from '@/components/CoverEditor';
-import { useState } from 'react';
-import { useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
+import { DocumentBlock as DocumentBlockType } from "@/types/document";
+import { Trash2, GripVertical, Upload } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { TableEditor } from "@/components/TableEditor";
+import { CoverEditor } from "@/components/CoverEditor";
+import { useState } from "react";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 interface DocumentBlockProps {
   block: DocumentBlockType;
@@ -16,9 +22,13 @@ interface DocumentBlockProps {
   onDelete: (id: string) => void;
 }
 
+const Required = () => (
+  <span className="text-red-500 ml-1">*</span>
+);
+
 export const DocumentBlock = ({ block, onUpdate, onDelete }: DocumentBlockProps) => {
-  const [imagePreview, setImagePreview] = useState<string>(block.imageUrl || '');
-  
+  const [imagePreview, setImagePreview] = useState<string>(block.imageUrl || "");
+
   const {
     attributes,
     listeners,
@@ -66,27 +76,27 @@ export const DocumentBlock = ({ block, onUpdate, onDelete }: DocumentBlockProps)
   };
 
   const addListItem = () => {
-    const newItems = [...(block.listItems || []), ''];
+    const newItems = [...(block.listItems || []), ""];
     onUpdate(block.id, { listItems: newItems });
   };
 
   const addKeyword = () => {
-    const newItems = [...(block.keywords || []), ''];
+    const newItems = [...(block.keywords || []), ""];
     onUpdate(block.id, { keywords: newItems });
   };
 
   const addReference = () => {
-    const newItems = [...(block.references || []), ''];
+    const newItems = [...(block.references || []), ""];
     onUpdate(block.id, { references: newItems });
   };
 
   return (
-    <div 
+    <div
       ref={setNodeRef}
       style={style}
       className="group relative bg-card border border-border rounded-lg p-6 hover:border-primary/40 transition-all"
     >
-      <div 
+      <div
         className="absolute left-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity cursor-move"
         {...attributes}
         {...listeners}
@@ -106,10 +116,15 @@ export const DocumentBlock = ({ block, onUpdate, onDelete }: DocumentBlockProps)
       </div>
 
       <div className="pl-6">
-        {block.type === 'title' && (
+        {/* TÍTULO (OBRIGATÓRIO) */}
+        {block.type === "title" && (
           <div className="space-y-3">
+            <label className="text-sm font-medium text-foreground flex items-center">
+              Título <Required />
+            </label>
+
             <Select
-              value={block.level?.toString() || '1'}
+              value={block.level?.toString() || "1"}
               onValueChange={(value) => onUpdate(block.id, { level: parseInt(value) })}
             >
               <SelectTrigger className="w-48">
@@ -123,16 +138,21 @@ export const DocumentBlock = ({ block, onUpdate, onDelete }: DocumentBlockProps)
                 <SelectItem value="5">Título Nível 5</SelectItem>
               </SelectContent>
             </Select>
+
             <Input
               value={block.content}
               onChange={(e) => onUpdate(block.id, { content: e.target.value })}
+              required
               placeholder="Digite o título..."
-              className="font-document text-lg font-bold"
+              className={`font-document text-lg font-bold ${
+                !block.content ? "border-red-500" : ""
+              }`}
             />
           </div>
         )}
 
-        {block.type === 'paragraph' && (
+        {/* PARÁGRAFO */}
+        {block.type === "paragraph" && (
           <Textarea
             value={block.content}
             onChange={(e) => onUpdate(block.id, { content: e.target.value })}
@@ -141,7 +161,8 @@ export const DocumentBlock = ({ block, onUpdate, onDelete }: DocumentBlockProps)
           />
         )}
 
-        {block.type === 'quote' && (
+        {/* CITAÇÃO */}
+        {block.type === "quote" && (
           <Textarea
             value={block.content}
             onChange={(e) => onUpdate(block.id, { content: e.target.value })}
@@ -150,7 +171,8 @@ export const DocumentBlock = ({ block, onUpdate, onDelete }: DocumentBlockProps)
           />
         )}
 
-        {block.type === 'image' && (
+        {/* IMAGEM */}
+        {block.type === "image" && (
           <div className="space-y-3">
             <div className="border-2 border-dashed border-border rounded-lg p-4 text-center">
               {imagePreview ? (
@@ -158,20 +180,13 @@ export const DocumentBlock = ({ block, onUpdate, onDelete }: DocumentBlockProps)
               ) : (
                 <label className="cursor-pointer flex flex-col items-center gap-2">
                   <Upload className="w-8 h-8 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">
-                    Clique para fazer upload de imagem
-                  </span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                  />
+                  <span className="text-sm text-muted-foreground">Clique para fazer upload de imagem</span>
+                  <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
                 </label>
               )}
             </div>
             <Input
-              value={block.alt || ''}
+              value={block.alt || ""}
               onChange={(e) => onUpdate(block.id, { alt: e.target.value })}
               placeholder="Descrição da imagem (alt text)..."
               className="text-sm"
@@ -179,9 +194,10 @@ export const DocumentBlock = ({ block, onUpdate, onDelete }: DocumentBlockProps)
           </div>
         )}
 
-        {block.type === 'list' && (
+        {/* LISTA NÃO NUMERADA */}
+        {block.type === "list" && (
           <div className="space-y-2">
-            {(block.listItems || ['']).map((item, index) => (
+            {(block.listItems || [""]).map((item, index) => (
               <Input
                 key={index}
                 value={item}
@@ -190,20 +206,16 @@ export const DocumentBlock = ({ block, onUpdate, onDelete }: DocumentBlockProps)
                 className="font-document"
               />
             ))}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={addListItem}
-              className="w-full"
-            >
+            <Button variant="outline" size="sm" onClick={addListItem} className="w-full">
               + Adicionar item
             </Button>
           </div>
         )}
 
-        {block.type === 'ordered-list' && (
+        {/* LISTA NUMERADA */}
+        {block.type === "ordered-list" && (
           <div className="space-y-2">
-            {(block.listItems || ['']).map((item, index) => (
+            {(block.listItems || [""]).map((item, index) => (
               <div key={index} className="flex gap-2 items-center">
                 <span className="text-sm font-semibold text-muted-foreground w-6">{index + 1}.</span>
                 <Input
@@ -214,30 +226,35 @@ export const DocumentBlock = ({ block, onUpdate, onDelete }: DocumentBlockProps)
                 />
               </div>
             ))}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={addListItem}
-              className="w-full"
-            >
+            <Button variant="outline" size="sm" onClick={addListItem} className="w-full">
               + Adicionar item
             </Button>
           </div>
         )}
 
-        {block.type === 'abstract' && (
-          <Textarea
-            value={block.content}
-            onChange={(e) => onUpdate(block.id, { content: e.target.value })}
-            placeholder="Digite o resumo do trabalho..."
-            className="min-h-40 font-document resize-none"
-          />
+        {/* RESUMO (OBRIGATÓRIO) */}
+        {block.type === "abstract" && (
+          <div>
+            <label className="text-sm font-medium text-foreground flex items-center">
+              Resumo <Required />
+            </label>
+            <Textarea
+              value={block.content}
+              onChange={(e) => onUpdate(block.id, { content: e.target.value })}
+              required
+              placeholder="Digite o resumo do trabalho..."
+              className={`min-h-40 font-document resize-none ${
+                !block.content ? "border-red-500" : ""
+              }`}
+            />
+          </div>
         )}
 
-        {block.type === 'keywords' && (
+        {/* PALAVRAS-CHAVE */}
+        {block.type === "keywords" && (
           <div className="space-y-2">
             <p className="text-sm text-muted-foreground mb-2">Palavras-chave (uma por linha)</p>
-            {(block.keywords || ['']).map((keyword, index) => (
+            {(block.keywords || [""]).map((keyword, index) => (
               <Input
                 key={index}
                 value={keyword}
@@ -246,21 +263,17 @@ export const DocumentBlock = ({ block, onUpdate, onDelete }: DocumentBlockProps)
                 className="font-document"
               />
             ))}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={addKeyword}
-              className="w-full"
-            >
+            <Button variant="outline" size="sm" onClick={addKeyword} className="w-full">
               + Adicionar palavra-chave
             </Button>
           </div>
         )}
 
-        {block.type === 'references' && (
+        {/* REFERÊNCIAS */}
+        {block.type === "references" && (
           <div className="space-y-2">
             <p className="text-sm text-muted-foreground mb-2">Referências bibliográficas (formato ABNT)</p>
-            {(block.references || ['']).map((reference, index) => (
+            {(block.references || [""]).map((reference, index) => (
               <Textarea
                 key={index}
                 value={reference}
@@ -269,37 +282,33 @@ export const DocumentBlock = ({ block, onUpdate, onDelete }: DocumentBlockProps)
                 className="min-h-20 font-document resize-none text-sm"
               />
             ))}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={addReference}
-              className="w-full"
-            >
+            <Button variant="outline" size="sm" onClick={addReference} className="w-full">
               + Adicionar referência
             </Button>
           </div>
         )}
 
-        {block.type === 'page-break' && (
+        {/* QUEBRA DE PÁGINA */}
+        {block.type === "page-break" && (
           <div className="p-6 bg-muted/30 rounded border-2 border-dashed border-border text-center">
-            <p className="text-sm font-semibold text-muted-foreground">
-              📄 Quebra de Página
-            </p>
+            <p className="text-sm font-semibold text-muted-foreground">📄 Quebra de Página</p>
             <p className="text-xs text-muted-foreground mt-1">
               Uma nova página será iniciada após este elemento
             </p>
           </div>
         )}
 
-        {block.type === 'table' && (
+        {/* TABELA */}
+        {block.type === "table" && (
           <TableEditor
-            headers={block.tableData?.headers || ['Coluna 1', 'Coluna 2']}
-            rows={block.tableData?.rows || [['', ''], ['', '']]}
+            headers={block.tableData?.headers || ["Coluna 1", "Coluna 2"]}
+            rows={block.tableData?.rows || [["", ""], ["", ""]]}
             onChange={(headers, rows) => onUpdate(block.id, { tableData: { headers, rows } })}
           />
         )}
 
-        {block.type === 'footnote' && (
+        {/* NOTA DE RODAPÉ */}
+        {block.type === "footnote" && (
           <div className="space-y-2">
             <Input
               type="number"
@@ -317,20 +326,24 @@ export const DocumentBlock = ({ block, onUpdate, onDelete }: DocumentBlockProps)
           </div>
         )}
 
-        {block.type === 'cover' && (
+        {/* CAPA */}
+        {block.type === "cover" && (
           <CoverEditor
-            data={block.coverData || {
-              title: '',
-              author: '',
-              institution: '',
-              city: '',
-              year: new Date().getFullYear().toString(),
-            }}
+            data={
+              block.coverData || {
+                title: "",
+                author: "",
+                institution: "",
+                city: "",
+                year: new Date().getFullYear().toString(),
+              }
+            }
             onChange={(data) => onUpdate(block.id, { coverData: data })}
           />
         )}
 
-        {block.type === 'toc' && (
+        {/* SUMÁRIO */}
+        {block.type === "toc" && (
           <div className="p-4 bg-muted/50 rounded border border-border">
             <p className="text-sm text-muted-foreground italic">
               O sumário será gerado automaticamente com base nos títulos do documento
