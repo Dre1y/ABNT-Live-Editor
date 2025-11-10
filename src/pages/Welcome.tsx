@@ -55,18 +55,6 @@ const Welcome = () => {
               >
                 Começar Novo Documento
               </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                onClick={() => {
-                  navigate('/editor');
-                  // Trigger load from localStorage
-                  window.dispatchEvent(new Event('loadDocument'));
-                }}
-                className="gap-2 px-8 py-6 text-lg"
-              >
-                Carregar Documento Salvo
-              </Button>
             </div>
           </div>
 
