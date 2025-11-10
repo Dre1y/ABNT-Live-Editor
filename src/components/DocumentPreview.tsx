@@ -194,7 +194,7 @@ export const DocumentPreview = ({ blocks }: DocumentPreviewProps) => {
   };
 
   return (
-    <div style={{ flex: 1, height: "100vh", overflowY: "auto", backgroundColor: "#f5f5f5", padding: "2rem 0" }} ref={containerRef}>
+    <div style={{ flex: 1, height: "100vh", overflowY: "auto", backgroundColor: "#f5f5f5", padding: "2rem 0", color: "#000" }} ref={containerRef}>
       <div style={{ maxWidth: "800px", margin: "0 auto", padding: "0 2rem" }}>
         {blocks.length === 0 ? (
           <div style={{ width: "21cm", minHeight: "29.7cm", padding: "3cm 2cm 2cm 3cm", background: "white", boxShadow: "0 0 10px rgba(0,0,0,0.1)", marginBottom: "1rem", boxSizing: "border-box", display: "flex", justifyContent: "center", alignItems: "center", textAlign: "center" }}>
