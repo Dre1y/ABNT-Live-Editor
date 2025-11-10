@@ -19,7 +19,7 @@ export const Toolbar = ({
   showPreview,
 }: ToolbarProps) => {
   return (
-    <div className="h-16 border-b border-border bg-card flex items-center px-8">
+    <div className="h-16 border-b border-border bg-card p-4 flex items-center px-8">
       {/* Lado esquerdo */}
       <div className="flex items-center gap-4">
         <Button
