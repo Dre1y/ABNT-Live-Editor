@@ -84,6 +84,16 @@ const Index = () => {
   }, [blocks]);
 
   const addBlock = (type: BlockType) => {
+    const UNIQUE_BLOCKS: BlockType[] = ["cover", "abstract", "toc"];
+
+    if (UNIQUE_BLOCKS.includes(type)) {
+      const exists = blocks.some((block) => block.type === type);
+      if (exists) {
+        toast.error("Este elemento só pode ser adicionado uma vez.");
+        return;
+      }
+    }
+
     const newBlock: DocumentBlockType = {
       id: `block-${Date.now()}-${Math.random()}`,
       type,
