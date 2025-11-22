@@ -56,6 +56,19 @@ export const DocumentPreview = ({ blocks }: DocumentPreviewProps) => {
     };
 
     blocks.forEach((block) => {
+      // Force a new page when encountering an explicit page break
+      if (block.type === "page-break") {
+        if (currentPage.length > 0) {
+          allPages.push(currentPage);
+        } else {
+          // preserve intentional blank page
+          allPages.push([]);
+        }
+        currentPage = [];
+        currentHeight = 0;
+        return;
+      }
+
       const blockHeight = estimateBlockHeight(block);
 
       if (currentHeight + blockHeight > PAGE_HEIGHT) {
