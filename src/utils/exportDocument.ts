@@ -1,22 +1,36 @@
-import { DocumentBlock } from '@/types/document';
-import html2pdf from 'html2pdf.js';
-import { Document, Paragraph, TextRun, HeadingLevel, AlignmentType, Table, TableCell, TableRow, WidthType } from 'docx';
-import { saveAs } from 'file-saver';
+import { DocumentBlock } from "@/types/document";
+import html2pdf from "html2pdf.js";
+import {
+  Document,
+  Paragraph,
+  TextRun,
+  HeadingLevel,
+  AlignmentType,
+  Table,
+  TableCell,
+  TableRow,
+  WidthType,
+} from "docx";
+import { saveAs } from "file-saver";
 
 export const exportToPDF = async (element: HTMLElement) => {
   const opt = {
     margin: [30, 20, 20, 30] as [number, number, number, number], // top, right, bottom, left (in mm)
-    filename: 'documento-abnt.pdf',
-    image: { type: 'jpeg' as const, quality: 0.98 },
+    filename: "documento-abnt.pdf",
+    image: { type: "jpeg" as const, quality: 0.98 },
     html2canvas: { scale: 2, useCORS: true },
-    jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const }
+    jsPDF: {
+      unit: "mm" as const,
+      format: "a4" as const,
+      orientation: "portrait" as const,
+    },
   };
 
   try {
     await html2pdf().set(opt).from(element).save();
     return true;
   } catch (error) {
-    console.error('Error exporting to PDF:', error);
+    console.error("Error exporting to PDF:", error);
     return false;
   }
 };
@@ -26,7 +40,7 @@ export const exportToDOCX = async (blocks: DocumentBlock[]) => {
 
   blocks.forEach((block) => {
     switch (block.type) {
-      case 'cover':
+      case "cover":
         if (block.coverData) {
           children.push(
             new Paragraph({
@@ -38,15 +52,28 @@ export const exportToDOCX = async (blocks: DocumentBlock[]) => {
               alignment: AlignmentType.CENTER,
               spacing: { after: 200 },
             }),
-            new Paragraph({
-              children: [
-                new TextRun({
-                  text: block.coverData.author,
-                }),
-              ],
-              alignment: AlignmentType.CENTER,
-              spacing: { after: 400 },
-            }),
+            ...(() => {
+              const authors =
+                block.coverData!.authors && block.coverData!.authors!.length > 0
+                  ? block.coverData!.authors!
+                  : block.coverData!.author
+                  ? [block.coverData!.author]
+                  : [];
+              const sorted = [...authors]
+                .filter(Boolean)
+                .sort((a, b) =>
+                  a.localeCompare(b, "pt-BR", { sensitivity: "base" })
+                );
+              if (sorted.length === 0) return [] as any[];
+              return sorted.map(
+                (name, idx) =>
+                  new Paragraph({
+                    children: [new TextRun({ text: name })],
+                    alignment: AlignmentType.CENTER,
+                    spacing: { after: idx === sorted.length - 1 ? 400 : 0 },
+                  })
+              );
+            })(),
             new Paragraph({
               children: [
                 new TextRun({
@@ -85,7 +112,7 @@ export const exportToDOCX = async (blocks: DocumentBlock[]) => {
         }
         break;
 
-      case 'title':
+      case "title":
         const headingLevels = [
           HeadingLevel.HEADING_1,
           HeadingLevel.HEADING_2,
@@ -97,13 +124,14 @@ export const exportToDOCX = async (blocks: DocumentBlock[]) => {
           new Paragraph({
             text: block.content,
             heading: headingLevels[(block.level || 1) - 1],
-            alignment: block.level === 1 ? AlignmentType.CENTER : AlignmentType.LEFT,
+            alignment:
+              block.level === 1 ? AlignmentType.CENTER : AlignmentType.LEFT,
             spacing: { before: 240, after: 120 },
           })
         );
         break;
 
-      case 'paragraph':
+      case "paragraph":
         children.push(
           new Paragraph({
             text: block.content,
@@ -114,7 +142,7 @@ export const exportToDOCX = async (blocks: DocumentBlock[]) => {
         );
         break;
 
-      case 'quote':
+      case "quote":
         children.push(
           new Paragraph({
             children: [
@@ -129,7 +157,7 @@ export const exportToDOCX = async (blocks: DocumentBlock[]) => {
         );
         break;
 
-      case 'list':
+      case "list":
         (block.listItems || []).forEach((item) => {
           children.push(
             new Paragraph({
@@ -141,10 +169,10 @@ export const exportToDOCX = async (blocks: DocumentBlock[]) => {
         });
         break;
 
-      case 'table':
+      case "table":
         if (block.tableData) {
           const tableRows = [
-              new TableRow({
+            new TableRow({
               children: block.tableData.headers.map(
                 (header) =>
                   new TableCell({
@@ -158,7 +186,10 @@ export const exportToDOCX = async (blocks: DocumentBlock[]) => {
                         ],
                       }),
                     ],
-                    width: { size: 100 / block.tableData!.headers.length, type: WidthType.PERCENTAGE },
+                    width: {
+                      size: 100 / block.tableData!.headers.length,
+                      type: WidthType.PERCENTAGE,
+                    },
                   })
               ),
             }),
@@ -169,7 +200,10 @@ export const exportToDOCX = async (blocks: DocumentBlock[]) => {
                     (cell) =>
                       new TableCell({
                         children: [new Paragraph(cell)],
-                        width: { size: 100 / block.tableData!.headers.length, type: WidthType.PERCENTAGE },
+                        width: {
+                          size: 100 / block.tableData!.headers.length,
+                          type: WidthType.PERCENTAGE,
+                        },
                       })
                   ),
                 })
@@ -185,10 +219,10 @@ export const exportToDOCX = async (blocks: DocumentBlock[]) => {
         }
         break;
 
-      case 'footnote':
+      case "footnote":
         children.push(
           new Paragraph({
-            text: `${block.footnoteNumber || ''} ${block.content}`,
+            text: `${block.footnoteNumber || ""} ${block.content}`,
             spacing: { before: 120 },
           })
         );
@@ -218,11 +252,11 @@ export const exportToDOCX = async (blocks: DocumentBlock[]) => {
   });
 
   try {
-    const blob = await require('docx').Packer.toBlob(doc);
-    saveAs(blob, 'documento-abnt.docx');
+    const blob = await require("docx").Packer.toBlob(doc);
+    saveAs(blob, "documento-abnt.docx");
     return true;
   } catch (error) {
-    console.error('Error exporting to DOCX:', error);
+    console.error("Error exporting to DOCX:", error);
     return false;
   }
 };

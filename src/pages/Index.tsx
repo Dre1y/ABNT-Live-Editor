@@ -133,7 +133,7 @@ const Index = () => {
         type === "cover"
           ? {
               title: "",
-              author: "",
+              authors: [""],
               institution: "",
               city: "",
               year: new Date().getFullYear().toString(),

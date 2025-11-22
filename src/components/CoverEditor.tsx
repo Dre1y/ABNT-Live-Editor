@@ -5,7 +5,7 @@ interface CoverEditorProps {
   data: {
     title: string;
     subtitle?: string;
-    author: string;
+    authors: string[];
     institution: string;
     city: string;
     year: string;
@@ -14,13 +14,30 @@ interface CoverEditorProps {
 }
 
 // Componente visual para marcar campo obrigatório
-const Required = () => (
-  <span className="text-red-500 ml-1">*</span>
-);
+const Required = () => <span className="text-red-500 ml-1">*</span>;
 
 export const CoverEditor = ({ data, onChange }: CoverEditorProps) => {
   const handleChange = (field: string, value: string) => {
     onChange({ ...data, [field]: value });
+  };
+
+  const handleAuthorChange = (index: number, value: string) => {
+    const updated = [...(data.authors || [""])];
+    updated[index] = value;
+    onChange({ ...data, authors: updated });
+  };
+
+  const addAuthor = () => {
+    const updated = [...(data.authors || [])];
+    updated.push("");
+    onChange({ ...data, authors: updated });
+  };
+
+  const removeAuthor = (index: number) => {
+    const updated = [...(data.authors || [])];
+    updated.splice(index, 1);
+    if (updated.length === 0) updated.push("");
+    onChange({ ...data, authors: updated });
   };
 
   return (
@@ -51,17 +68,39 @@ export const CoverEditor = ({ data, onChange }: CoverEditorProps) => {
       </div>
 
       <div>
-        <Label htmlFor="author">
-          Autor(a)
+        <Label>
+          Autores
           <Required />
         </Label>
-        <Input
-          id="author"
-          value={data.author}
-          onChange={(e) => handleChange("author", e.target.value)}
-          placeholder="Seu nome completo..."
-          required
-        />
+        <div className="space-y-2 mt-1">
+          {(data.authors || [""]).map((author, idx) => (
+            <div key={idx} className="flex gap-2">
+              <Input
+                value={author}
+                onChange={(e) => handleAuthorChange(idx, e.target.value)}
+                placeholder={`Autor(a) ${idx + 1}...`}
+                required
+                className="flex-1"
+              />
+              {(data.authors?.length || 0) > 1 && (
+                <button
+                  type="button"
+                  className="px-3 py-2 text-sm border rounded hover:bg-muted"
+                  onClick={() => removeAuthor(idx)}
+                >
+                  Remover
+                </button>
+              )}
+            </div>
+          ))}
+          <button
+            type="button"
+            className="w-full px-3 py-2 text-sm border rounded hover:bg-muted"
+            onClick={addAuthor}
+          >
+            + Adicionar autor(a)
+          </button>
+        </div>
       </div>
 
       <div>
@@ -105,7 +144,10 @@ export const CoverEditor = ({ data, onChange }: CoverEditorProps) => {
             maxLength={4}
             value={data.year}
             onChange={(e) =>
-              handleChange("year", e.target.value.replace(/\D/g, "").slice(0, 4))
+              handleChange(
+                "year",
+                e.target.value.replace(/\D/g, "").slice(0, 4)
+              )
             }
             placeholder="2025..."
             required

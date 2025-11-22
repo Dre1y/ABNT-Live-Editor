@@ -1,4 +1,18 @@
-export type BlockType = 'title' | 'paragraph' | 'quote' | 'image' | 'list' | 'ordered-list' | 'table' | 'footnote' | 'cover' | 'toc' | 'page-break' | 'abstract' | 'references' | 'keywords';
+export type BlockType =
+  | "title"
+  | "paragraph"
+  | "quote"
+  | "image"
+  | "list"
+  | "ordered-list"
+  | "table"
+  | "footnote"
+  | "cover"
+  | "toc"
+  | "page-break"
+  | "abstract"
+  | "references"
+  | "keywords";
 
 export interface TableCell {
   content: string;
@@ -22,7 +36,9 @@ export interface DocumentBlock {
   coverData?: {
     title: string;
     subtitle?: string;
-    author: string;
+    // New: support multiple authors. Keep legacy `author` for backward compatibility.
+    authors?: string[];
+    author?: string;
     institution: string;
     city: string;
     year: string;

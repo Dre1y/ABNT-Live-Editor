@@ -22,12 +22,16 @@ interface DocumentBlockProps {
   onDelete: (id: string) => void;
 }
 
-const Required = () => (
-  <span className="text-red-500 ml-1">*</span>
-);
+const Required = () => <span className="text-red-500 ml-1">*</span>;
 
-export const DocumentBlock = ({ block, onUpdate, onDelete }: DocumentBlockProps) => {
-  const [imagePreview, setImagePreview] = useState<string>(block.imageUrl || "");
+export const DocumentBlock = ({
+  block,
+  onUpdate,
+  onDelete,
+}: DocumentBlockProps) => {
+  const [imagePreview, setImagePreview] = useState<string>(
+    block.imageUrl || ""
+  );
 
   const {
     attributes,
@@ -125,7 +129,9 @@ export const DocumentBlock = ({ block, onUpdate, onDelete }: DocumentBlockProps)
 
             <Select
               value={block.level?.toString() || "1"}
-              onValueChange={(value) => onUpdate(block.id, { level: parseInt(value) })}
+              onValueChange={(value) =>
+                onUpdate(block.id, { level: parseInt(value) })
+              }
             >
               <SelectTrigger className="w-48">
                 <SelectValue placeholder="Nível do título" />
@@ -176,12 +182,23 @@ export const DocumentBlock = ({ block, onUpdate, onDelete }: DocumentBlockProps)
           <div className="space-y-3">
             <div className="border-2 border-dashed border-border rounded-lg p-4 text-center">
               {imagePreview ? (
-                <img src={imagePreview} alt={block.alt} className="max-w-full h-auto mx-auto rounded" />
+                <img
+                  src={imagePreview}
+                  alt={block.alt}
+                  className="max-w-full h-auto mx-auto rounded"
+                />
               ) : (
                 <label className="cursor-pointer flex flex-col items-center gap-2">
                   <Upload className="w-8 h-8 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">Clique para fazer upload de imagem</span>
-                  <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                  <span className="text-sm text-muted-foreground">
+                    Clique para fazer upload de imagem
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                  />
                 </label>
               )}
             </div>
@@ -206,7 +223,12 @@ export const DocumentBlock = ({ block, onUpdate, onDelete }: DocumentBlockProps)
                 className="font-document"
               />
             ))}
-            <Button variant="outline" size="sm" onClick={addListItem} className="w-full">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={addListItem}
+              className="w-full"
+            >
               + Adicionar item
             </Button>
           </div>
@@ -217,7 +239,9 @@ export const DocumentBlock = ({ block, onUpdate, onDelete }: DocumentBlockProps)
           <div className="space-y-2">
             {(block.listItems || [""]).map((item, index) => (
               <div key={index} className="flex gap-2 items-center">
-                <span className="text-sm font-semibold text-muted-foreground w-6">{index + 1}.</span>
+                <span className="text-sm font-semibold text-muted-foreground w-6">
+                  {index + 1}.
+                </span>
                 <Input
                   value={item}
                   onChange={(e) => handleListItemChange(index, e.target.value)}
@@ -226,7 +250,12 @@ export const DocumentBlock = ({ block, onUpdate, onDelete }: DocumentBlockProps)
                 />
               </div>
             ))}
-            <Button variant="outline" size="sm" onClick={addListItem} className="w-full">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={addListItem}
+              className="w-full"
+            >
               + Adicionar item
             </Button>
           </div>
@@ -253,7 +282,9 @@ export const DocumentBlock = ({ block, onUpdate, onDelete }: DocumentBlockProps)
         {/* PALAVRAS-CHAVE */}
         {block.type === "keywords" && (
           <div className="space-y-2">
-            <p className="text-sm text-muted-foreground mb-2">Palavras-chave (uma por linha)</p>
+            <p className="text-sm text-muted-foreground mb-2">
+              Palavras-chave (uma por linha)
+            </p>
             {(block.keywords || [""]).map((keyword, index) => (
               <Input
                 key={index}
@@ -263,7 +294,12 @@ export const DocumentBlock = ({ block, onUpdate, onDelete }: DocumentBlockProps)
                 className="font-document"
               />
             ))}
-            <Button variant="outline" size="sm" onClick={addKeyword} className="w-full">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={addKeyword}
+              className="w-full"
+            >
               + Adicionar palavra-chave
             </Button>
           </div>
@@ -272,7 +308,9 @@ export const DocumentBlock = ({ block, onUpdate, onDelete }: DocumentBlockProps)
         {/* REFERÊNCIAS */}
         {block.type === "references" && (
           <div className="space-y-2">
-            <p className="text-sm text-muted-foreground mb-2">Referências bibliográficas (formato ABNT)</p>
+            <p className="text-sm text-muted-foreground mb-2">
+              Referências bibliográficas (formato ABNT)
+            </p>
             {(block.references || [""]).map((reference, index) => (
               <Textarea
                 key={index}
@@ -282,7 +320,12 @@ export const DocumentBlock = ({ block, onUpdate, onDelete }: DocumentBlockProps)
                 className="min-h-20 font-document resize-none text-sm"
               />
             ))}
-            <Button variant="outline" size="sm" onClick={addReference} className="w-full">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={addReference}
+              className="w-full"
+            >
               + Adicionar referência
             </Button>
           </div>
@@ -291,7 +334,9 @@ export const DocumentBlock = ({ block, onUpdate, onDelete }: DocumentBlockProps)
         {/* QUEBRA DE PÁGINA */}
         {block.type === "page-break" && (
           <div className="p-6 bg-muted/30 rounded border-2 border-dashed border-border text-center">
-            <p className="text-sm font-semibold text-muted-foreground">📄 Quebra de Página</p>
+            <p className="text-sm font-semibold text-muted-foreground">
+              📄 Quebra de Página
+            </p>
             <p className="text-xs text-muted-foreground mt-1">
               Uma nova página será iniciada após este elemento
             </p>
@@ -302,8 +347,15 @@ export const DocumentBlock = ({ block, onUpdate, onDelete }: DocumentBlockProps)
         {block.type === "table" && (
           <TableEditor
             headers={block.tableData?.headers || ["Coluna 1", "Coluna 2"]}
-            rows={block.tableData?.rows || [["", ""], ["", ""]]}
-            onChange={(headers, rows) => onUpdate(block.id, { tableData: { headers, rows } })}
+            rows={
+              block.tableData?.rows || [
+                ["", ""],
+                ["", ""],
+              ]
+            }
+            onChange={(headers, rows) =>
+              onUpdate(block.id, { tableData: { headers, rows } })
+            }
           />
         )}
 
@@ -313,7 +365,9 @@ export const DocumentBlock = ({ block, onUpdate, onDelete }: DocumentBlockProps)
             <Input
               type="number"
               value={block.footnoteNumber || 1}
-              onChange={(e) => onUpdate(block.id, { footnoteNumber: parseInt(e.target.value) })}
+              onChange={(e) =>
+                onUpdate(block.id, { footnoteNumber: parseInt(e.target.value) })
+              }
               placeholder="Número da nota"
               className="w-32"
             />
@@ -329,15 +383,25 @@ export const DocumentBlock = ({ block, onUpdate, onDelete }: DocumentBlockProps)
         {/* CAPA */}
         {block.type === "cover" && (
           <CoverEditor
-            data={
-              block.coverData || {
+            data={(() => {
+              const base = block.coverData || {
                 title: "",
-                author: "",
                 institution: "",
                 city: "",
                 year: new Date().getFullYear().toString(),
-              }
-            }
+              };
+              const authors = (base as any).authors as string[] | undefined;
+              const legacyAuthor = (base as any).author as string | undefined;
+              return {
+                ...base,
+                authors:
+                  authors && authors.length > 0
+                    ? authors
+                    : legacyAuthor
+                    ? [legacyAuthor]
+                    : [""],
+              } as any;
+            })()}
             onChange={(data) => onUpdate(block.id, { coverData: data })}
           />
         )}
@@ -346,7 +410,8 @@ export const DocumentBlock = ({ block, onUpdate, onDelete }: DocumentBlockProps)
         {block.type === "toc" && (
           <div className="p-4 bg-muted/50 rounded border border-border">
             <p className="text-sm text-muted-foreground italic">
-              O sumário será gerado automaticamente com base nos títulos do documento
+              O sumário será gerado automaticamente com base nos títulos do
+              documento
             </p>
           </div>
         )}
