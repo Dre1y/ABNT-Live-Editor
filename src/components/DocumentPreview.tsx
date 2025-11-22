@@ -332,11 +332,12 @@ export const DocumentPreview = ({ blocks }: DocumentPreviewProps) => {
           <div
             style={{
               textAlign: "center",
-              height: "100%",
+              minHeight: "calc(29.7cm - 5cm)",
               display: "flex",
               flexDirection: "column",
-              justifyContent: "space-between",
-              padding: "4rem 0",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "1.5rem",
               pageBreakAfter: "always",
             }}
           >
@@ -345,12 +346,12 @@ export const DocumentPreview = ({ blocks }: DocumentPreviewProps) => {
                 style={{
                   fontWeight: "bold",
                   fontSize: "1.2rem",
-                  marginBottom: "2rem",
+                  marginBottom: "1.25rem",
                 }}
               >
                 {block.coverData?.institution?.toUpperCase()}
               </p>
-              <div style={{ fontSize: "1rem", marginBottom: "2rem" }}>
+              <div style={{ fontSize: "1rem" }}>
                 {(() => {
                   const authors =
                     block.coverData?.authors &&
@@ -368,19 +369,19 @@ export const DocumentPreview = ({ blocks }: DocumentPreviewProps) => {
                 })()}
               </div>
             </div>
-            <div style={{ margin: "auto 0" }}>
+            <div>
               <h1
                 style={{
                   fontSize: "2rem",
                   fontWeight: "bold",
                   textTransform: "uppercase",
-                  marginBottom: "1rem",
+                  marginBottom: "0.5rem",
                 }}
               >
                 {block.coverData?.title}
               </h1>
               {block.coverData?.subtitle && (
-                <h2 style={{ fontSize: "1.5rem", marginBottom: "2rem" }}>
+                <h2 style={{ fontSize: "1.25rem" }}>
                   {block.coverData.subtitle}
                 </h2>
               )}
