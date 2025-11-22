@@ -24,6 +24,7 @@ export interface DocumentBlock {
   content: string;
   level?: number; // For titles (1-5)
   imageUrl?: string;
+  imageWidth?: number; // percentage width (10-100)
   alt?: string;
   listItems?: string[];
   keywords?: string[];

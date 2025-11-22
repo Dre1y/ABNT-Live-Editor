@@ -15,6 +15,7 @@ import { CoverEditor } from "@/components/CoverEditor";
 import { useState } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { Slider } from "@/components/ui/slider";
 
 interface DocumentBlockProps {
   block: DocumentBlockType;
@@ -185,7 +186,11 @@ export const DocumentBlock = ({
                 <img
                   src={imagePreview}
                   alt={block.alt}
-                  className="max-w-full h-auto mx-auto rounded"
+                  className="h-auto mx-auto rounded"
+                  style={{
+                    width: `${block.imageWidth ?? 100}%`,
+                    maxWidth: "100%",
+                  }}
                 />
               ) : (
                 <label className="cursor-pointer flex flex-col items-center gap-2">
@@ -201,6 +206,39 @@ export const DocumentBlock = ({
                   />
                 </label>
               )}
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-6 items-center gap-3">
+              <label className="text-sm font-medium text-foreground md:col-span-2">
+                Largura da imagem
+              </label>
+              <div className="md:col-span-3">
+                <Slider
+                  value={[block.imageWidth ?? 100]}
+                  min={10}
+                  max={100}
+                  step={1}
+                  onValueChange={(v) =>
+                    onUpdate(block.id, { imageWidth: v[0] })
+                  }
+                />
+              </div>
+              <div className="md:col-span-1 flex items-center gap-2">
+                <Input
+                  type="number"
+                  min={10}
+                  max={100}
+                  value={(block.imageWidth ?? 100).toString()}
+                  onChange={(e) => {
+                    const num = Math.max(
+                      10,
+                      Math.min(100, parseInt(e.target.value || "0"))
+                    );
+                    onUpdate(block.id, { imageWidth: isNaN(num) ? 100 : num });
+                  }}
+                  className="w-20"
+                />
+                <span className="text-sm text-muted-foreground">%</span>
+              </div>
             </div>
             <Input
               value={block.alt || ""}

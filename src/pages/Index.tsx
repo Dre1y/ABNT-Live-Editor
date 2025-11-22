@@ -116,6 +116,7 @@ const Index = () => {
       type,
       content: "",
       level: type === "title" ? 1 : undefined,
+      imageWidth: type === "image" ? 100 : undefined,
       listItems: type === "list" || type === "ordered-list" ? [""] : undefined,
       keywords: type === "keywords" ? [""] : undefined,
       references: type === "references" ? [""] : undefined,

@@ -36,7 +36,7 @@ export const DocumentPreview = ({ blocks }: DocumentPreviewProps) => {
         case "title":
           return 40;
         case "image":
-          return 200;
+          return Math.max(120, 200 * ((block.imageWidth || 100) / 100));
         case "list":
         case "ordered-list":
           return (block.listItems?.length || 3) * 20 + 10;
@@ -208,7 +208,11 @@ export const DocumentPreview = ({ blocks }: DocumentPreviewProps) => {
             <img
               src={block.imageUrl}
               alt={block.alt || "Imagem do documento"}
-              style={{ maxWidth: "100%", maxHeight: 400 }}
+              style={{
+                width: `${block.imageWidth || 100}%`,
+                height: "auto",
+                maxHeight: 600,
+              }}
             />
             {block.alt && (
               <figcaption
