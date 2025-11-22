@@ -69,6 +69,17 @@ export const DocumentPreview = ({ blocks }: DocumentPreviewProps) => {
         return;
       }
 
+      // Ensure cover is always on its own dedicated page
+      if (block.type === "cover") {
+        if (currentPage.length > 0) {
+          allPages.push(currentPage);
+        }
+        allPages.push([block]);
+        currentPage = [];
+        currentHeight = 0;
+        return;
+      }
+
       const blockHeight = estimateBlockHeight(block);
 
       if (currentHeight + blockHeight > PAGE_HEIGHT) {
