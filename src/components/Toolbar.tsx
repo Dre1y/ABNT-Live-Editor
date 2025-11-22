@@ -5,12 +5,14 @@ interface ToolbarProps {
   onExport: () => void;
   onTogglePreview: () => void;
   showPreview: boolean;
+  currentDocName?: string | null;
 }
 
 export const Toolbar = ({
   onExport,
   onTogglePreview,
   showPreview,
+  currentDocName,
 }: ToolbarProps) => {
   return (
     <div className="h-16 border-b border-border bg-card p-4 flex items-center px-8">
@@ -30,7 +32,8 @@ export const Toolbar = ({
       {/* CENTRO */}
       <div className="flex-1 flex justify-center">
         <span className="text-sm font-medium">
-          {showPreview ? "Visualizando documento" : "Editando documento"}
+          {showPreview ? "Visualizando" : "Editando"}{" "}
+          {currentDocName ? `: ${currentDocName}` : " documento"}
         </span>
       </div>
 

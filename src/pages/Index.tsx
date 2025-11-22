@@ -26,20 +26,31 @@ import {
   saveDocument,
   loadDocument,
   clearDocument,
+  listDocuments,
+  saveDocumentAs,
+  saveDocumentById,
+  loadDocumentById,
+  deleteDocumentById,
+  renameDocumentById,
+  type SavedDocMeta,
 } from "@/utils/documentStorage";
 import { exportToPDF } from "@/utils/exportDocument";
 import { createRoot } from "react-dom/client";
 import { PrintDocument } from "@/components/PrintDocument";
 import { toast } from "sonner";
-import { Save, History, Trash2 } from "lucide-react";
+import { Save, FolderOpen, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SaveStatus } from "@/components/SaveStatus";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -80,6 +91,16 @@ const Index = () => {
   const [justSaved, setJustSaved] = useState(false);
   const justSavedTimerRef = useRef<number | null>(null);
   const [hasSavedDoc, setHasSavedDoc] = useState(false);
+  const [docs, setDocs] = useState<SavedDocMeta[]>([]);
+  const [showSaveAs, setShowSaveAs] = useState(false);
+  const [saveAsName, setSaveAsName] = useState("");
+  const [showOpen, setShowOpen] = useState(false);
+  const [currentDocId, setCurrentDocId] = useState<string | null>(null);
+  const [currentDocName, setCurrentDocName] = useState<string | null>(null);
+  const [docVersion, setDocVersion] = useState(0);
+  const [showRename, setShowRename] = useState(false);
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [renameName, setRenameName] = useState("");
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -92,6 +113,7 @@ const Index = () => {
     // Detecta se há documento salvo no storage ao iniciar
     const existing = loadDocument();
     setHasSavedDoc(!!(existing && existing.length > 0));
+    setDocs(listDocuments());
 
     const handleLoadDocument = () => {
       const savedBlocks = loadDocument();
@@ -116,12 +138,15 @@ const Index = () => {
     setSaving(true);
     // Save 1s after the last change
     saveTimerRef.current = window.setTimeout(() => {
-      const saved = saveDocument(blocks);
+      const saved = currentDocId
+        ? saveDocumentById(blocks, currentDocId, currentDocName || undefined)
+        : saveDocument(blocks);
       setSaving(false);
       if (saved) {
         setDirty(false);
         setLastSavedAt(Date.now());
         setHasSavedDoc(true);
+        if (currentDocId) setDocs(listDocuments());
       } else {
         toast.error("Erro ao salvar automaticamente");
       }
@@ -220,12 +245,15 @@ const Index = () => {
       saveTimerRef.current = null;
     }
     setSaving(true);
-    const success = saveDocument(blocks);
+    const success = currentDocId
+      ? saveDocumentById(blocks, currentDocId, currentDocName || undefined)
+      : saveDocument(blocks);
     setSaving(false);
     if (success) {
       setDirty(false);
       setLastSavedAt(Date.now());
       setHasSavedDoc(true);
+      if (currentDocId) setDocs(listDocuments());
       // Ativa feedback visual curto para salvamento manual
       if (justSavedTimerRef.current) {
         clearTimeout(justSavedTimerRef.current);
@@ -241,13 +269,7 @@ const Index = () => {
   };
 
   const handleLoad = () => {
-    const savedBlocks = loadDocument();
-    if (savedBlocks && savedBlocks.length > 0) {
-      setBlocks(savedBlocks);
-      toast.success("Documento carregado com sucesso!");
-    } else {
-      toast.error("Nenhum documento salvo encontrado");
-    }
+    setShowOpen(true);
   };
 
   const handleClear = () => {
@@ -256,6 +278,83 @@ const Index = () => {
     clearDocument();
     setHasSavedDoc(false);
     toast.success("Documento limpo");
+  };
+
+  const handleSaveAsConfirm = () => {
+    const name = saveAsName.trim();
+    if (!name) {
+      toast.error("Dê um nome ao documento");
+      return;
+    }
+    const meta = saveDocumentAs(blocks, name);
+    if (meta) {
+      toast.success("Documento salvo");
+      setShowSaveAs(false);
+      setSaveAsName("");
+      setHasSavedDoc(true);
+      setDocs(listDocuments());
+      setCurrentDocId(meta.id);
+      setCurrentDocName(meta.name);
+      setDocVersion((v) => v + 1);
+    } else {
+      toast.error("Erro ao salvar documento");
+    }
+  };
+
+  const handleOpenDocument = (id: string) => {
+    const data = loadDocumentById(id);
+    if (data && data.length > 0) {
+      if (saveTimerRef.current) {
+        clearTimeout(saveTimerRef.current);
+        saveTimerRef.current = null;
+      }
+      setBlocks(data);
+      setShowOpen(false);
+      const meta = docs.find((d) => d.id === id) || null;
+      setCurrentDocId(id);
+      setCurrentDocName(meta ? meta.name : null);
+      setDirty(false);
+      setLastSavedAt(meta ? meta.updatedAt : Date.now());
+      setDocVersion((v) => v + 1);
+      toast.success("Documento carregado");
+    } else {
+      toast.error("Falha ao abrir documento");
+    }
+  };
+
+  const handleDeleteDocument = (id: string) => {
+    const ok = deleteDocumentById(id);
+    if (ok) {
+      setDocs(listDocuments());
+      toast.success("Documento excluído");
+    } else {
+      toast.error("Erro ao excluir documento");
+    }
+  };
+
+  const startRenameDocument = (id: string, name: string) => {
+    setRenamingId(id);
+    setRenameName(name);
+    setShowRename(true);
+  };
+
+  const handleRenameConfirm = () => {
+    const name = renameName.trim();
+    if (!renamingId || !name) {
+      toast.error(!name ? "Dê um nome ao documento" : "Documento inválido");
+      return;
+    }
+    const ok = renameDocumentById(renamingId, name);
+    if (ok) {
+      setDocs(listDocuments());
+      if (currentDocId === renamingId) setCurrentDocName(name);
+      setShowRename(false);
+      setRenamingId(null);
+      setRenameName("");
+      toast.success("Documento renomeado");
+    } else {
+      toast.error("Erro ao renomear documento");
+    }
   };
 
   const handleExport = async () => {
@@ -313,7 +412,10 @@ const Index = () => {
       collisionDetection={closestCenter}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex h-screen overflow-hidden bg-background">
+      <div
+        key={currentDocId ?? `v-${docVersion}`}
+        className="flex h-screen overflow-hidden bg-background"
+      >
         <Sidebar onAddBlock={addBlock} />
 
         <div className="flex-1 flex flex-col overflow-hidden">
@@ -321,31 +423,30 @@ const Index = () => {
             onExport={handleExport}
             onTogglePreview={() => setShowPreview(!showPreview)}
             showPreview={showPreview}
+            currentDocName={currentDocName}
           />
 
           <div className="h-14 bg-card border-b border-border flex items-center justify-between px-6 p-5">
             <div className="flex gap-3">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleLoad}
-                      className="gap-2"
-                      disabled={!hasSavedDoc}
-                    >
-                      <History className="w-4 h-4" />
-                      Abrir documento salvo
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {hasSavedDoc
-                      ? "Abre um documento salvo anteriormente na plataforma. Você pode salvar o documento atual antes de abrir outro, ou continuar seu trabalho mais tarde ao carregar."
-                      : "Nenhum documento salvo encontrado."}
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              <Button
+                variant="default"
+                size="sm"
+                className="gap-2"
+                onClick={() => setShowSaveAs(true)}
+              >
+                <Save className="w-4 h-4" />
+                Salvar como…
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleLoad}
+                className="gap-2"
+                disabled={docs.length === 0}
+              >
+                <FolderOpen className="w-4 h-4" />
+                Abrir…
+              </Button>
               <Button
                 variant="outline"
                 size="sm"
@@ -360,10 +461,13 @@ const Index = () => {
 
           {showPreview ? (
             <div ref={previewRef}>
-              <DocumentPreview blocks={blocks} />
+              <DocumentPreview
+                key={`${currentDocId ?? "none"}-${docVersion}`}
+                blocks={blocks}
+              />
             </div>
           ) : (
-            <div className="flex-1 overflow-auto p-8">
+            <div key={docVersion} className="flex-1 overflow-auto p-8">
               <div className="max-w-4xl mx-auto space-y-4">
                 <div className="mb-8">
                   <h2 className="text-2xl font-bold text-foreground mb-2">
@@ -391,7 +495,7 @@ const Index = () => {
                   >
                     {blocks.map((block) => (
                       <DocumentBlock
-                        key={block.id}
+                        key={`${block.id}-${docVersion}`}
                         block={block}
                         onUpdate={updateBlock}
                         onDelete={deleteBlock}
@@ -432,6 +536,115 @@ const Index = () => {
           onSaveNow={saveNow}
           justSaved={justSaved}
         />
+
+        {/* Dialog: Salvar como */}
+        <Dialog open={showSaveAs} onOpenChange={setShowSaveAs}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Salvar como</DialogTitle>
+              <DialogDescription>
+                Dê um nome para salvar este documento no seu navegador.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-2 py-2">
+              <Label htmlFor="doc-name">Nome do documento</Label>
+              <Input
+                id="doc-name"
+                placeholder="Ex.: Trabalho de História"
+                value={saveAsName}
+                onChange={(e) => setSaveAsName(e.target.value)}
+              />
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowSaveAs(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={handleSaveAsConfirm}>Salvar</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Dialog: Abrir documento */}
+        <Dialog open={showOpen} onOpenChange={setShowOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Abrir documento</DialogTitle>
+              <DialogDescription>
+                Selecione um documento salvo anteriormente para abrir.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-2 max-h-80 overflow-auto">
+              {docs.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  Nenhum documento salvo.
+                </p>
+              ) : (
+                docs.map((d) => (
+                  <div
+                    key={d.id}
+                    className="flex items-center justify-between rounded border p-2"
+                  >
+                    <div>
+                      <div className="text-sm font-medium">{d.name}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {new Date(d.updatedAt).toLocaleString("pt-BR")}
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        onClick={() => handleOpenDocument(d.id)}
+                      >
+                        Abrir
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => startRenameDocument(d.id, d.name)}
+                      >
+                        Renomear
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleDeleteDocument(d.id)}
+                      >
+                        Excluir
+                      </Button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Dialog: Renomear documento */}
+        <Dialog open={showRename} onOpenChange={setShowRename}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Renomear documento</DialogTitle>
+              <DialogDescription>
+                Altere o nome do documento selecionado.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-2 py-2">
+              <Label htmlFor="rename-doc">Novo nome</Label>
+              <Input
+                id="rename-doc"
+                placeholder="Digite o novo nome"
+                value={renameName}
+                onChange={(e) => setRenameName(e.target.value)}
+              />
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowRename(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={handleRenameConfirm}>Salvar</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </DndContext>
   );
