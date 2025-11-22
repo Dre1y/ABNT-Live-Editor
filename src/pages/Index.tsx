@@ -23,7 +23,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { saveDocument, loadDocument } from "@/utils/documentStorage";
-import { exportToPDF, exportToDOCX } from "@/utils/exportDocument";
+import { exportToPDF } from "@/utils/exportDocument";
 import { createRoot } from "react-dom/client";
 import { PrintDocument } from "@/components/PrintDocument";
 import { toast } from "sonner";
@@ -239,8 +239,8 @@ const Index = () => {
     toast.success("Documento limpo");
   };
 
-  const handleExport = async (format: "pdf" | "docx") => {
-    if (format === "pdf") {
+  const handleExport = async () => {
+    {
       // Renderiza uma versão dedicada para impressão/exportação
       const container = document.createElement("div");
       container.style.position = "fixed";
@@ -284,13 +284,6 @@ const Index = () => {
         toast.success("PDF exportado com sucesso!");
       } else {
         toast.error("Erro ao exportar PDF");
-      }
-    } else if (format === "docx") {
-      const success = await exportToDOCX(blocks);
-      if (success) {
-        toast.success("DOCX exportado com sucesso!");
-      } else {
-        toast.error("Erro ao exportar DOCX");
       }
     }
   };

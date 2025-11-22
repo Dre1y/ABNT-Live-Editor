@@ -10,6 +10,7 @@ import {
   TableCell,
   TableRow,
   WidthType,
+  Packer,
 } from "docx";
 import { saveAs } from "file-saver";
 
@@ -253,7 +254,7 @@ export const exportToDOCX = async (blocks: DocumentBlock[]) => {
   });
 
   try {
-    const blob = await require("docx").Packer.toBlob(doc);
+    const blob = await Packer.toBlob(doc);
     saveAs(blob, "documento-abnt.docx");
     return true;
   } catch (error) {
