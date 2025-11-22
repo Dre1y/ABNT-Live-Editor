@@ -27,6 +27,7 @@ import { exportToPDF, exportToDOCX } from "@/utils/exportDocument";
 import { toast } from "sonner";
 import { Save, FolderOpen, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SaveStatus } from "@/components/SaveStatus";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -60,6 +61,12 @@ const Index = () => {
   const [showPreview, setShowPreview] = useState(false);
   const [showClearDialog, setShowClearDialog] = useState(false);
   const previewRef = useRef<HTMLDivElement>(null);
+  const [saving, setSaving] = useState(false);
+  const [dirty, setDirty] = useState(false);
+  const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
+  const saveTimerRef = useRef<number | null>(null);
+  const [justSaved, setJustSaved] = useState(false);
+  const justSavedTimerRef = useRef<number | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -83,22 +90,29 @@ const Index = () => {
     return () => window.removeEventListener("loadDocument", handleLoadDocument);
   }, []);
 
+  // Debounced auto-save whenever there are unsaved changes
   useEffect(() => {
-    let lastSaved = JSON.stringify(blocks);
-
-    const autoSave = setInterval(() => {
-      const current = JSON.stringify(blocks);
-      if (current !== lastSaved && blocks.length > 0) {
-        const saved = saveDocument(blocks);
-        if (saved) {
-          toast.info("Documento salvo automaticamente");
-          lastSaved = current;
-        }
+    if (!dirty) return;
+    if (saveTimerRef.current) {
+      clearTimeout(saveTimerRef.current);
+    }
+    setSaving(true);
+    // Save 1s after the last change
+    saveTimerRef.current = window.setTimeout(() => {
+      const saved = saveDocument(blocks);
+      setSaving(false);
+      if (saved) {
+        setDirty(false);
+        setLastSavedAt(Date.now());
+      } else {
+        toast.error("Erro ao salvar automaticamente");
       }
-    }, 300000); // 5 min
+    }, 1000);
 
-    return () => clearInterval(autoSave);
-  }, [blocks]);
+    return () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    };
+  }, [blocks, dirty]);
 
   const addBlock = (type: BlockType) => {
     const UNIQUE_BLOCKS: BlockType[] = ["cover", "abstract", "toc"];
@@ -142,6 +156,7 @@ const Index = () => {
           : undefined,
     };
     setBlocks([...blocks, newBlock]);
+    setDirty(true);
     toast.success(`${BLOCK_LABELS[type]} adicionada(o)!`);
   };
 
@@ -151,10 +166,12 @@ const Index = () => {
         block.id === id ? { ...block, ...updates } : block
       )
     );
+    setDirty(true);
   };
 
   const deleteBlock = (id: string) => {
     setBlocks(blocks.filter((block) => block.id !== id));
+    setDirty(true);
     toast.success("Elemento removido");
   };
 
@@ -167,15 +184,41 @@ const Index = () => {
         const newIndex = items.findIndex((item) => item.id === over.id);
         return arrayMove(items, oldIndex, newIndex);
       });
+      setDirty(true);
       toast.success("Ordem alterada");
     }
   };
 
   const handleSave = () => {
-    const success = saveDocument(blocks);
+    const success = saveNow();
     toast[success ? "success" : "error"](
       success ? "Documento salvo!" : "Erro ao salvar"
     );
+  };
+
+  const saveNow = () => {
+    if (saveTimerRef.current) {
+      clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = null;
+    }
+    setSaving(true);
+    const success = saveDocument(blocks);
+    setSaving(false);
+    if (success) {
+      setDirty(false);
+      setLastSavedAt(Date.now());
+      // Ativa feedback visual curto para salvamento manual
+      if (justSavedTimerRef.current) {
+        clearTimeout(justSavedTimerRef.current);
+        justSavedTimerRef.current = null;
+      }
+      setJustSaved(true);
+      justSavedTimerRef.current = window.setTimeout(() => {
+        setJustSaved(false);
+        justSavedTimerRef.current = null;
+      }, 2000);
+    }
+    return success;
   };
 
   const handleLoad = () => {
@@ -260,9 +303,6 @@ const Index = () => {
                 Limpar
               </Button>
             </div>
-            <p className="text-xs text-muted-foreground">
-              Auto-salvamento a cada 5 minutos
-            </p>
           </div>
 
           {showPreview ? (
@@ -331,6 +371,14 @@ const Index = () => {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        <SaveStatus
+          saving={saving}
+          dirty={dirty}
+          lastSavedAt={lastSavedAt}
+          onSaveNow={saveNow}
+          justSaved={justSaved}
+        />
       </div>
     </DndContext>
   );
