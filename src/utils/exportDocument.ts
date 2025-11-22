@@ -18,7 +18,8 @@ export const exportToPDF = async (element: HTMLElement) => {
     margin: [30, 20, 20, 30] as [number, number, number, number], // top, right, bottom, left (in mm)
     filename: "documento-abnt.pdf",
     image: { type: "jpeg" as const, quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true },
+    html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff" },
+    pagebreak: { mode: ["css", "legacy"] as any },
     jsPDF: {
       unit: "mm" as const,
       format: "a4" as const,

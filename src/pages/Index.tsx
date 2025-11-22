@@ -24,6 +24,8 @@ import {
 } from "@dnd-kit/sortable";
 import { saveDocument, loadDocument } from "@/utils/documentStorage";
 import { exportToPDF, exportToDOCX } from "@/utils/exportDocument";
+import { createRoot } from "react-dom/client";
+import { PrintDocument } from "@/components/PrintDocument";
 import { toast } from "sonner";
 import { Save, FolderOpen, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -239,13 +241,49 @@ const Index = () => {
 
   const handleExport = async (format: "pdf" | "docx") => {
     if (format === "pdf") {
-      if (previewRef.current) {
-        const success = await exportToPDF(previewRef.current);
-        if (success) {
-          toast.success("PDF exportado com sucesso!");
-        } else {
-          toast.error("Erro ao exportar PDF");
-        }
+      // Renderiza uma versão dedicada para impressão/exportação
+      const container = document.createElement("div");
+      container.style.position = "fixed";
+      container.style.left = "0";
+      container.style.top = "0";
+      container.style.opacity = "0";
+      container.style.pointerEvents = "none";
+      container.style.backgroundColor = "#ffffff";
+      document.body.appendChild(container);
+
+      const root = createRoot(container);
+      root.render(<PrintDocument blocks={blocks} />);
+
+      // Aguarda primeiro paint e imagens
+      const waitForImages = async () => {
+        const imgs = Array.from(container.querySelectorAll("img"));
+        await Promise.all(
+          imgs.map(
+            (img) =>
+              new Promise<void>((resolve) => {
+                const el = img as HTMLImageElement;
+                if (el.complete) return resolve();
+                el.addEventListener("load", () => resolve(), { once: true });
+                el.addEventListener("error", () => resolve(), { once: true });
+              })
+          )
+        );
+      };
+
+      await new Promise((r) => requestAnimationFrame(() => r(null)));
+      await new Promise((r) => requestAnimationFrame(() => r(null)));
+      await waitForImages();
+
+      const target = (container.firstElementChild as HTMLElement) || container;
+      const success = await exportToPDF(target);
+
+      root.unmount();
+      container.remove();
+
+      if (success) {
+        toast.success("PDF exportado com sucesso!");
+      } else {
+        toast.error("Erro ao exportar PDF");
       }
     } else if (format === "docx") {
       const success = await exportToDOCX(blocks);
@@ -275,15 +313,6 @@ const Index = () => {
 
           <div className="h-14 bg-card border-b border-border flex items-center justify-between px-6 p-5">
             <div className="flex gap-3">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleSave}
-                className="gap-2"
-              >
-                <Save className="w-4 h-4" />
-                Salvar
-              </Button>
               <Button
                 variant="outline"
                 size="sm"
