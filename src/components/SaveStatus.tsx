@@ -20,23 +20,23 @@ export const SaveStatus = ({
   const renderStatus = () => {
     if (saving) {
       return (
-        <div className="flex items-center gap-2 text-amber-600">
-          <Loader2 className="h-4 w-4 animate-spin" />
+        <div className="flex items-center gap-1.5 text-amber-600 text-xs">
+          <Loader2 className="h-3 w-3 animate-spin" />
           <span className="font-medium">Salvando…</span>
         </div>
       );
     }
     if (dirty) {
       return (
-        <div className="flex items-center gap-2 text-amber-600">
-          <AlertTriangle className="h-4 w-4" />
+        <div className="flex items-center gap-1.5 text-amber-600 text-xs">
+          <AlertTriangle className="h-3 w-3" />
           <span className="font-medium">Alterações não salvas</span>
         </div>
       );
     }
     return (
-      <div className="flex items-center gap-2 text-emerald-600">
-        <CheckCircle2 className="h-4 w-4" />
+      <div className="flex items-center gap-1.5 text-emerald-600 text-xs">
+        <CheckCircle2 className="h-3 w-3" />
         <span className="font-medium">
           {justSaved
             ? "Salvo agora!"
@@ -52,23 +52,26 @@ export const SaveStatus = ({
   };
 
   return (
-    <div className="fixed top-4 right-4 z-50">
+    <div
+      className="fixed bottom-24 right-4 z-30 pointer-events-none max-w-[calc(100vw-2rem)]"
+      role="status"
+    >
       <Card
-        className={`min-w-[280px] shadow-lg border-primary/30 ${
+        className={`min-w-[200px] w-fit shadow-md border-primary/30 pointer-events-auto ${
           justSaved ? "ring-2 ring-emerald-400 animate-pulse" : ""
         }`}
         aria-live="polite"
       >
-        <CardContent className="pt-4">
-          <div className="flex items-center justify-between gap-3">
+        <CardContent className="p-2">
+          <div className="flex items-center justify-between gap-2">
             {renderStatus()}
             <Button
               variant="outline"
               size="sm"
               onClick={onSaveNow}
-              className="gap-2"
+              className="gap-1 h-8 px-2 text-xs whitespace-nowrap"
             >
-              <Save className="h-4 w-4" />
+              <Save className="h-3 w-3" />
               Salvar agora
             </Button>
           </div>
