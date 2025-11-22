@@ -22,14 +22,24 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { saveDocument, loadDocument } from "@/utils/documentStorage";
+import {
+  saveDocument,
+  loadDocument,
+  clearDocument,
+} from "@/utils/documentStorage";
 import { exportToPDF } from "@/utils/exportDocument";
 import { createRoot } from "react-dom/client";
 import { PrintDocument } from "@/components/PrintDocument";
 import { toast } from "sonner";
-import { Save, FolderOpen, Trash2 } from "lucide-react";
+import { Save, History, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SaveStatus } from "@/components/SaveStatus";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -69,6 +79,7 @@ const Index = () => {
   const saveTimerRef = useRef<number | null>(null);
   const [justSaved, setJustSaved] = useState(false);
   const justSavedTimerRef = useRef<number | null>(null);
+  const [hasSavedDoc, setHasSavedDoc] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -78,6 +89,10 @@ const Index = () => {
   );
 
   useEffect(() => {
+    // Detecta se há documento salvo no storage ao iniciar
+    const existing = loadDocument();
+    setHasSavedDoc(!!(existing && existing.length > 0));
+
     const handleLoadDocument = () => {
       const savedBlocks = loadDocument();
       if (savedBlocks && savedBlocks.length > 0) {
@@ -106,6 +121,7 @@ const Index = () => {
       if (saved) {
         setDirty(false);
         setLastSavedAt(Date.now());
+        setHasSavedDoc(true);
       } else {
         toast.error("Erro ao salvar automaticamente");
       }
@@ -209,6 +225,7 @@ const Index = () => {
     if (success) {
       setDirty(false);
       setLastSavedAt(Date.now());
+      setHasSavedDoc(true);
       // Ativa feedback visual curto para salvamento manual
       if (justSavedTimerRef.current) {
         clearTimeout(justSavedTimerRef.current);
@@ -236,6 +253,8 @@ const Index = () => {
   const handleClear = () => {
     setBlocks([]);
     setShowClearDialog(false);
+    clearDocument();
+    setHasSavedDoc(false);
     toast.success("Documento limpo");
   };
 
@@ -306,15 +325,27 @@ const Index = () => {
 
           <div className="h-14 bg-card border-b border-border flex items-center justify-between px-6 p-5">
             <div className="flex gap-3">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleLoad}
-                className="gap-2"
-              >
-                <FolderOpen className="w-4 h-4" />
-                Carregar
-              </Button>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleLoad}
+                      className="gap-2"
+                      disabled={!hasSavedDoc}
+                    >
+                      <History className="w-4 h-4" />
+                      Abrir documento salvo
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {hasSavedDoc
+                      ? "Abre um documento salvo anteriormente na plataforma. Você pode salvar o documento atual antes de abrir outro, ou continuar seu trabalho mais tarde ao carregar."
+                      : "Nenhum documento salvo encontrado."}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
               <Button
                 variant="outline"
                 size="sm"

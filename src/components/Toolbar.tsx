@@ -43,7 +43,7 @@ export const Toolbar = ({
           onClick={onExport}
         >
           <FileDown className="w-4 h-4" />
-          Exportar PDF
+          Exportar
         </Button>
       </div>
     </div>
