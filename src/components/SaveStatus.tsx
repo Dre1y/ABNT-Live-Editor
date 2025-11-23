@@ -53,7 +53,7 @@ export const SaveStatus = ({
 
   return (
     <div
-      className="fixed bottom-24 right-4 z-30 pointer-events-none max-w-[calc(100vw-2rem)]"
+      className="fixed bottom-24 right-8 z-30 pointer-events-none max-w-[calc(100vw-2rem)]"
       role="status"
     >
       <Card

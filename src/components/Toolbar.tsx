@@ -17,7 +17,7 @@ export const Toolbar = ({
   return (
     <div className="h-16 border-b border-border bg-card p-4 flex items-center px-8">
       {/* Lado esquerdo */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center">
         <Button
           variant={showPreview ? "default" : "outline"}
           size="sm"
@@ -38,11 +38,10 @@ export const Toolbar = ({
       </div>
 
       {/* Lado direito */}
-      <div className="flex items-center gap-2 m-5">
+      <div className="flex items-center">
         <Button
           variant="default"
           size="sm"
-          className="gap-2"
           onClick={onExport}
         >
           <FileDown className="w-4 h-4" />
