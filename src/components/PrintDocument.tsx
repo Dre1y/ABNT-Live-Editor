@@ -1,12 +1,13 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { DocumentBlock } from "@/types/document";
 
 interface PrintDocumentProps {
   blocks: DocumentBlock[];
 }
 
-// Print-focused rendering without preview pagination.
+// Print rendering matching the on-screen preview pagination and styles.
 export const PrintDocument: React.FC<PrintDocumentProps> = ({ blocks }) => {
+  // Same title styles used by the preview component
   const getTitleClass = (level: number = 1) => {
     const sizes: Record<number, React.CSSProperties> = {
       1: {
@@ -22,6 +23,94 @@ export const PrintDocument: React.FC<PrintDocumentProps> = ({ blocks }) => {
     };
     return sizes[level] || sizes[1];
   };
+
+  // Mirrors preview's pseudo-pagination logic to produce identical pages
+  const PAGE_HEIGHT = 29.7 * 37.795; // 29.7cm in pixels (approx)
+
+  const pages = useMemo(() => {
+    let currentHeight = 0;
+    let currentPage: DocumentBlock[] = [];
+    const allPages: DocumentBlock[][] = [];
+
+    const estimateBlockHeight = (block: DocumentBlock) => {
+      switch (block.type) {
+        case "paragraph":
+          return (block.content?.length || 50) / 2 + 20;
+        case "title":
+          return 40;
+        case "image":
+          return Math.max(120, 200 * ((block.imageWidth || 100) / 100));
+        case "list":
+        case "ordered-list":
+          return (block.listItems?.length || 3) * 20 + 10;
+        case "abstract":
+        case "references":
+        case "keywords":
+          return 80;
+        case "table":
+          return (block.tableData?.rows.length || 3) * 30 + 40;
+        case "quote":
+          return 60;
+        case "cover":
+          return 500;
+        default:
+          return 50;
+      }
+    };
+
+    blocks.forEach((block) => {
+      // Explicit page break starts a new page
+      if (block.type === "page-break") {
+        if (currentPage.length > 0) {
+          allPages.push(currentPage);
+        } else {
+          // preserve intentional blank page
+          allPages.push([]);
+        }
+        currentPage = [];
+        currentHeight = 0;
+        return;
+      }
+
+      // Dedicated standalone pages for cover and TOC
+      if (block.type === "cover" || block.type === "toc") {
+        if (currentPage.length > 0) {
+          allPages.push(currentPage);
+        }
+        allPages.push([block]);
+        currentPage = [];
+        currentHeight = 0;
+        return;
+      }
+
+      const blockHeight = estimateBlockHeight(block);
+      if (currentHeight + blockHeight > PAGE_HEIGHT) {
+        allPages.push(currentPage);
+        currentPage = [block];
+        currentHeight = blockHeight;
+      } else {
+        currentPage.push(block);
+        currentHeight += blockHeight;
+      }
+    });
+
+    if (currentPage.length > 0) {
+      allPages.push(currentPage);
+    }
+
+    return allPages;
+  }, [blocks]);
+
+  const tableOfContents = useMemo(() => {
+    return blocks
+      .filter((block) => block.type === "title")
+      .map((block, index) => ({
+        id: block.id,
+        content: block.content,
+        level: block.level || 1,
+        page: index + 1,
+      }));
+  }, [blocks]);
 
   const renderBlock = (block: DocumentBlock) => {
     switch (block.type) {
@@ -59,18 +148,19 @@ export const PrintDocument: React.FC<PrintDocumentProps> = ({ blocks }) => {
                 lineHeight: 1.5,
               }}
             >
-              {/* Nota: A numeração de páginas dinâmica na impressão real é complexa.
-                  Exibimos os títulos sem páginas aqui. */}
-              {blocks
-                .filter((b) => b.type === "title")
-                .map((b) => (
-                  <li
-                    key={b.id}
-                    style={{ marginLeft: `${((b.level || 1) - 1) * 1.5}rem` }}
-                  >
-                    <span>{b.content}</span>
-                  </li>
-                ))}
+              {tableOfContents.map((item) => (
+                <li
+                  key={item.id}
+                  style={{
+                    marginLeft: `${(item.level - 1) * 1.5}rem`,
+                    display: "flex",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <span>{item.content}</span>
+                  <span>{item.page}</span>
+                </li>
+              ))}
             </ul>
           </div>
         );
@@ -98,6 +188,7 @@ export const PrintDocument: React.FC<PrintDocumentProps> = ({ blocks }) => {
               fontSize: "11pt",
               lineHeight: 1,
               paddingLeft: "4cm",
+              borderLeft: "4px solid #888",
               margin: "1rem 0",
             }}
           >
@@ -114,7 +205,7 @@ export const PrintDocument: React.FC<PrintDocumentProps> = ({ blocks }) => {
               style={{
                 width: `${block.imageWidth || 100}%`,
                 height: "auto",
-                maxHeight: 1200,
+                maxHeight: 600,
               }}
             />
             {block.alt && (
@@ -167,7 +258,7 @@ export const PrintDocument: React.FC<PrintDocumentProps> = ({ blocks }) => {
 
       case "abstract":
         return (
-          <div style={{ margin: "2rem 0", pageBreakAfter: "always" }}>
+          <div style={{ margin: "2rem 0" }}>
             <h2
               style={{
                 textAlign: "center",
@@ -204,7 +295,7 @@ export const PrintDocument: React.FC<PrintDocumentProps> = ({ blocks }) => {
 
       case "references":
         return (
-          <div style={{ margin: "2rem 0", pageBreakBefore: "always" }}>
+          <div style={{ margin: "2rem 0" }}>
             <h2
               style={{
                 textAlign: "center",
@@ -241,7 +332,6 @@ export const PrintDocument: React.FC<PrintDocumentProps> = ({ blocks }) => {
               alignItems: "center",
               justifyContent: "center",
               gap: "1.5rem",
-              pageBreakAfter: "always",
             }}
           >
             <div>
@@ -356,7 +446,8 @@ export const PrintDocument: React.FC<PrintDocumentProps> = ({ blocks }) => {
         );
 
       case "page-break":
-        return <div style={{ pageBreakBefore: "always" }} />;
+        // Handled by pagination; no visible block to render
+        return null;
 
       default:
         return null;
@@ -364,17 +455,26 @@ export const PrintDocument: React.FC<PrintDocumentProps> = ({ blocks }) => {
   };
 
   return (
-    <div
-      style={{
-        width: "21cm",
-        padding: "3cm 2cm 2cm 3cm",
-        background: "white",
-        boxSizing: "border-box",
-        color: "#000",
-      }}
-    >
-      {blocks.map((b) => (
-        <div key={b.id}>{renderBlock(b)}</div>
+    <div>
+      {pages.map((pageBlocks, index) => (
+        <div
+          key={index}
+          style={{
+            width: "21cm",
+            minHeight: "29.7cm",
+            padding: "3cm 2cm 2cm 3cm",
+            background: "white",
+            boxShadow: "0 0 10px rgba(0,0,0,0.1)",
+            marginBottom: "1rem",
+            boxSizing: "border-box",
+            overflow: "hidden",
+            color: "#000",
+          }}
+        >
+          {pageBlocks.map((b) => (
+            <div key={b.id}>{renderBlock(b)}</div>
+          ))}
+        </div>
       ))}
     </div>
   );

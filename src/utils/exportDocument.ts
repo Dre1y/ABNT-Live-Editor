@@ -16,11 +16,21 @@ import { saveAs } from "file-saver";
 
 export const exportToPDF = async (element: HTMLElement) => {
   const opt = {
-    margin: [30, 20, 20, 30] as [number, number, number, number], // top, right, bottom, left (in mm)
+    // Use zero PDF margins; the rendered content already includes ABNT padding.
+    margin: [0, 0, 0, 0] as [number, number, number, number],
     filename: "documento-abnt.pdf",
     image: { type: "jpeg" as const, quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff" },
-    pagebreak: { mode: ["css", "legacy"] as any },
+    html2canvas: {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: "#ffffff",
+      // Ensure canvas width matches the element to avoid rounding issues
+      // that can introduce phantom blank pages.
+      windowWidth: element.scrollWidth,
+    },
+    // Prefer CSS-driven breaks and avoid algorithmic splitting that can
+    // create extra blank pages in some layouts.
+    pagebreak: { mode: ["css", "avoid-all"] as any },
     jsPDF: {
       unit: "mm" as const,
       format: "a4" as const,
